@@ -1,0 +1,721 @@
+.progress-content {
+    --progress-bg: #0b1220;
+    --progress-card: #111a2b;
+    --progress-card-soft: #151f32;
+    --progress-border: rgba(148, 163, 184, 0.13);
+    --progress-text: #f1f5f9;
+    --progress-muted: #8d9aaf;
+    --progress-purple: #8b7cf6;
+    --progress-purple-soft: rgba(139, 124, 246, 0.14);
+  }
+  
+  .app-shell > .app-content.progress-content {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    min-height: 100vh;
+    height: 100vh;
+    box-sizing: border-box;
+    padding: calc(var(--topbar-height) + 30px) 34px 44px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--progress-bg);
+    color: var(--progress-text);
+  }
+  
+  .sidebar-collapsed > .app-content.progress-content {
+    margin-left: var(--sidebar-collapsed-width);
+    width: calc(100% - var(--sidebar-collapsed-width));
+  }
+  
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 30px;
+    margin-bottom: 26px;
+  }
+  
+  .progress-eyebrow,
+  .panel-label,
+  .recommendation-content > span {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--progress-purple);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+  }
+  
+  .progress-header h1 {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.2;
+    font-weight: 750;
+    letter-spacing: -0.5px;
+  }
+  
+  .progress-header p {
+    margin: 9px 0 0;
+    color: var(--progress-muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
+  .progress-controls {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .control-label {
+    color: var(--progress-muted);
+    font-size: 12px;
+  }
+  
+  .practice-selector {
+    position: relative;
+  }
+  
+  .practice-selector-button {
+    min-width: 180px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 13px;
+    border: 1px solid var(--progress-border);
+    border-radius: 9px;
+    background: var(--progress-card);
+    color: var(--progress-text);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  
+  .practice-selector-button svg:first-child {
+    color: var(--progress-purple);
+  }
+  
+  .practice-selector-button svg:last-child {
+    margin-left: auto;
+    color: var(--progress-muted);
+    transition: transform 0.2s ease;
+  }
+  
+  .practice-selector-button .rotate {
+    transform: rotate(180deg);
+  }
+  
+  .practice-dropdown {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 7px);
+    right: 0;
+    width: 210px;
+    padding: 6px;
+    border: 1px solid var(--progress-border);
+    border-radius: 10px;
+    background: #111a2b;
+    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.35);
+  }
+  
+  .practice-dropdown button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 11px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--progress-muted);
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+  }
+  
+  .practice-dropdown button svg:last-child {
+    margin-left: auto;
+  }
+  
+  .practice-dropdown button:hover,
+  .practice-dropdown button.selected {
+    background: var(--progress-purple-soft);
+    color: var(--progress-text);
+  }
+  
+  .practice-dropdown button.selected svg {
+    color: var(--progress-purple);
+  }
+  
+  .progress-summary-grid {
+    display: grid;
+    grid-template-columns: 1.35fr repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 17px;
+  }
+  
+  .progress-stat-card,
+  .progress-panel {
+    border: 1px solid var(--progress-border);
+    border-radius: 13px;
+    background: var(--progress-card);
+  }
+  
+  .progress-stat-card {
+    min-height: 145px;
+    padding: 19px;
+    box-sizing: border-box;
+  }
+  
+  .stat-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--progress-muted);
+    font-size: 13px;
+  }
+  
+  .stat-top svg {
+    color: var(--progress-purple);
+  }
+  
+  .main-score {
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+  }
+  
+  .main-score strong {
+    font-size: 31px;
+    line-height: 1;
+    font-weight: 750;
+  }
+  
+  .main-score span {
+    max-width: 230px;
+    margin-top: 8px;
+    color: var(--progress-muted);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  
+  .big-stat {
+    display: block;
+    margin-top: 18px;
+    font-size: 30px;
+    line-height: 1;
+    font-weight: 750;
+  }
+  
+  .stat-helper {
+    display: block;
+    margin-top: 8px;
+    color: var(--progress-muted);
+    font-size: 11px;
+  }
+  
+  .stat-bottom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    color: #748197;
+    font-size: 10px;
+  }
+  
+  .stat-bottom svg {
+    color: var(--progress-purple);
+  }
+  
+  .progress-panel {
+    padding: 21px;
+  }
+  
+  .performance-panel,
+  .statistics-panel,
+  .activity-panel {
+    margin-bottom: 17px;
+  }
+  
+  .panel-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 22px;
+  }
+  
+  .panel-heading.compact {
+    margin-bottom: 20px;
+  }
+  
+  .panel-heading h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  
+  .panel-heading p {
+    margin: 6px 0 0;
+    color: var(--progress-muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  
+  .period-selector {
+    position: relative;
+  }
+  
+  .period-selector > button {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 11px;
+    border: 1px solid var(--progress-border);
+    border-radius: 8px;
+    background: var(--progress-card-soft);
+    color: var(--progress-text);
+    font-size: 11px;
+    cursor: pointer;
+  }
+  
+  .period-menu {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 6px);
+    right: 0;
+    width: 120px;
+    padding: 5px;
+    border: 1px solid var(--progress-border);
+    border-radius: 9px;
+    background: #111a2b;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+  }
+  
+  .period-menu button {
+    width: 100%;
+    padding: 8px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--progress-muted);
+    font-size: 11px;
+    text-align: left;
+    cursor: pointer;
+  }
+  
+  .period-menu button:hover,
+  .period-menu button.active {
+    background: var(--progress-purple-soft);
+    color: var(--progress-text);
+  }
+  
+  .performance-chart {
+    display: flex;
+    height: 235px;
+    gap: 12px;
+  }
+  
+  .chart-y-labels {
+    width: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: 3px;
+    color: #68758a;
+    font-size: 10px;
+    text-align: right;
+  }
+  
+  .chart-area {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    border-bottom: 1px solid var(--progress-border);
+  }
+  
+  .chart-grid-line {
+    height: 1px;
+    margin-bottom: 47px;
+    background: rgba(148, 163, 184, 0.08);
+  }
+  
+  .chart-bars {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 26px;
+    padding: 16px 35px 0;
+  }
+  
+  .chart-column {
+    width: 48px;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  
+  .chart-bar {
+    position: relative;
+    width: 31px;
+    min-height: 5px;
+    border-radius: 7px 7px 2px 2px;
+    background: linear-gradient(
+      to top,
+      rgba(139, 124, 246, 0.5),
+      var(--progress-purple)
+    );
+  }
+  
+  .chart-bar span {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #c8c3ff;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  
+  .chart-empty,
+  .activity-empty,
+  .insight-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .chart-empty {
+    position: absolute;
+    inset: 0;
+    color: var(--progress-muted);
+  }
+  
+  .chart-empty svg {
+    margin-bottom: 10px;
+    color: #66738a;
+  }
+  
+  .chart-empty strong {
+    color: #cbd5e1;
+    font-size: 13px;
+  }
+  
+  .chart-empty span {
+    max-width: 440px;
+    margin-top: 6px;
+    color: var(--progress-muted);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  
+  .detail-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  
+  .detail-stat {
+    min-height: 88px;
+    padding: 16px;
+    box-sizing: border-box;
+    border: 1px solid var(--progress-border);
+    border-radius: 10px;
+    background: var(--progress-card-soft);
+  }
+  
+  .detail-stat span {
+    display: block;
+    color: var(--progress-muted);
+    font-size: 11px;
+  }
+  
+  .detail-stat strong {
+    display: block;
+    margin-top: 13px;
+    font-size: 22px;
+    font-weight: 720;
+  }
+  
+  .progress-two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 17px;
+  }
+  
+  .insight-panel {
+    min-height: 250px;
+  }
+  
+  .insight-block {
+    display: flex;
+    gap: 12px;
+    padding: 13px;
+    margin-bottom: 11px;
+    border: 1px solid var(--progress-border);
+    border-radius: 10px;
+    background: var(--progress-card-soft);
+  }
+  
+  .insight-icon {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 36px;
+    border-radius: 8px;
+    background: var(--progress-purple-soft);
+    color: #a69cff;
+  }
+  
+  .insight-block > div:last-child {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .insight-block span {
+    color: var(--progress-muted);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+  }
+  
+  .insight-block strong {
+    margin-top: 4px;
+    font-size: 14px;
+  }
+  
+  .insight-block p {
+    margin: 4px 0 0;
+    color: var(--progress-muted);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  
+  .insight-empty {
+    min-height: 150px;
+  }
+  
+  .insight-empty .insight-icon {
+    margin-bottom: 9px;
+  }
+  
+  .insight-empty strong {
+    font-size: 13px;
+  }
+  
+  .insight-empty p {
+    max-width: 370px;
+    margin: 5px 0 0;
+    color: var(--progress-muted);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  
+  .activity-panel {
+    min-height: 250px;
+  }
+  
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .activity-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 61px;
+    border-top: 1px solid var(--progress-border);
+  }
+  
+  .activity-icon {
+    width: 37px;
+    height: 37px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 37px;
+    border-radius: 9px;
+    background: var(--progress-purple-soft);
+    color: #a69cff;
+  }
+  
+  .activity-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .activity-main strong {
+    font-size: 12px;
+  }
+  
+  .activity-main span {
+    color: var(--progress-muted);
+    font-size: 10px;
+  }
+  
+  .activity-score strong {
+    font-size: 14px;
+  }
+  
+  .activity-arrow {
+    color: #64748b;
+  }
+  
+  .activity-empty {
+    min-height: 150px;
+  }
+  
+  .empty-icon {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 9px;
+    border-radius: 9px;
+    background: var(--progress-purple-soft);
+    color: #a69cff;
+  }
+  
+  .activity-empty strong {
+    font-size: 13px;
+  }
+  
+  .activity-empty span {
+    max-width: 360px;
+    margin-top: 5px;
+    color: var(--progress-muted);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  
+  .recommendation-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid rgba(139, 124, 246, 0.18);
+    border-radius: 13px;
+    background:
+      linear-gradient(
+        110deg,
+        rgba(139, 124, 246, 0.11),
+        rgba(17, 26, 43, 0.96) 52%
+      ),
+      var(--progress-card);
+  }
+  
+  .recommendation-icon {
+    width: 47px;
+    height: 47px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 47px;
+    border-radius: 10px;
+    background: var(--progress-purple-soft);
+    color: #aaa0ff;
+  }
+  
+  .recommendation-content {
+    flex: 1;
+  }
+  
+  .recommendation-content h2 {
+    margin: 0;
+    font-size: 16px;
+  }
+  
+  .recommendation-content p {
+    margin: 5px 0 0;
+    color: var(--progress-muted);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  
+  .recommendation-card > button {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 14px;
+    border: 1px solid rgba(139, 124, 246, 0.3);
+    border-radius: 8px;
+    background: var(--progress-purple-soft);
+    color: #ddd9ff;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+  }
+  
+  .recommendation-card > button:hover {
+    background: rgba(139, 124, 246, 0.22);
+  }
+  
+  @media (max-width: 1100px) {
+    .progress-summary-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  
+    .main-score-card {
+      grid-column: span 2;
+    }
+  
+    .detail-stat-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  
+    .progress-two-column {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 760px) {
+    .app-shell > .app-content.progress-content {
+      padding-right: 20px;
+      padding-left: 20px;
+    }
+  
+    .progress-header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  
+    .progress-controls {
+      width: 100%;
+    }
+  
+    .practice-selector {
+      flex: 1;
+    }
+  
+    .practice-selector-button {
+      width: 100%;
+    }
+  
+    .progress-summary-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .main-score-card {
+      grid-column: auto;
+    }
+  
+    .detail-stat-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  
+    .recommendation-card {
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+  
+    .recommendation-card > button {
+      margin-left: 63px;
+    }
+  }

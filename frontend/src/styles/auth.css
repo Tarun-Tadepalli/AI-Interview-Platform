@@ -1,0 +1,1894 @@
+/* =========================================================
+   AI INTERVIEW PLATFORM
+   SHARED AUTHENTICATION STYLES
+
+   Pages:
+   - Login
+   - Register
+   - Resume Setup
+
+   Design:
+   - Professional
+   - Minimal
+   - Human-designed
+   - No excessive animation
+   - Shared visual language
+========================================================= */
+
+
+/* =========================================================
+   GLOBAL AUTH PAGE
+========================================================= */
+
+.auth-page {
+  min-height: 100vh;
+  width: 100%;
+
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 96px 24px 40px;
+
+  background-image:
+    linear-gradient(
+      rgba(7, 14, 35, 0.16),
+      rgba(7, 14, 35, 0.16)
+    ),
+    url("/auth_background.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  color: #f5f7ff;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   BOX SIZING
+========================================================= */
+
+.auth-page *,
+.auth-page *::before,
+.auth-page *::after {
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   NAVBAR
+========================================================= */
+
+.auth-navbar {
+  position: fixed;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 76px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 38px;
+
+  background: rgba(5, 10, 28, 0.34);
+
+  border-bottom: 1px solid
+    rgba(255, 255, 255, 0.08);
+
+  backdrop-filter: blur(8px);
+
+  z-index: 100;
+}
+
+
+/* =========================================================
+   NAVBAR BRAND
+========================================================= */
+
+.auth-navbar-brand {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 10px;
+
+  color: #ffffff;
+
+  text-decoration: none;
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 30px;
+
+  font-weight: 600;
+
+  letter-spacing: -0.25px;
+}
+
+.auth-navbar-brand strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   NAVBAR LOGO
+========================================================= */
+
+.auth-navbar-icon {
+  width: 44px;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  background: rgba(255, 255, 255, 0.09);
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.18);
+
+  color: #e60a0a;
+}
+
+
+/* =========================================================
+   HOME BUTTON
+========================================================= */
+
+.auth-home-link {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width: 85px;
+  height: 40px;
+
+  padding: 0 17px;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.15);
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.055);
+
+  color:
+    rgba(245, 247, 255, 0.88);
+
+  text-decoration: none;
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 16px;
+
+  font-weight: 600;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.auth-home-link:hover {
+  background:
+    rgba(255, 255, 255, 0.10);
+
+  border-color:
+    rgba(255, 255, 255, 0.24);
+
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   MAIN CONTENT WRAPPER
+========================================================= */
+
+.auth-main {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* =========================================================
+   MAIN AUTH CARD
+========================================================= */
+
+.auth-form-panel {
+  position: relative;
+  z-index: 5;
+
+  width: min(560px, 100%);
+
+  margin: 0 auto;
+
+  padding: 42px 48px 38px;
+
+  background:
+    rgba(9, 16, 38, 0.92);
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.14);
+
+  box-shadow:
+    0 26px 65px
+    rgba(0, 0, 0, 0.40);
+
+  /*
+     Opposite asymmetric corners.
+
+     Top-left     = curved
+     Top-right    = slightly sharp
+     Bottom-right = curved
+     Bottom-left  = slightly sharp
+  */
+
+  border-radius:
+    30px
+    8px
+    30px
+    8px;
+
+  backdrop-filter: blur(12px);
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   REGISTER CARD
+========================================================= */
+
+.register-page .auth-form-panel {
+  width: min(820px, 100%);
+
+  padding:
+    38px
+    48px
+    34px;
+}
+
+
+/* =========================================================
+   RESUME CARD
+========================================================= */
+
+.resume-page .auth-form-panel {
+  width: min(690px, 100%);
+
+  padding:
+    42px
+    48px
+    38px;
+}
+
+
+/* =========================================================
+   OLD BRAND INSIDE CARD
+   Navbar owns the brand now.
+========================================================= */
+
+.auth-form-container > .auth-brand {
+  display: none !important;
+}
+
+
+/* =========================================================
+   REMOVE OLD ANIMATION
+========================================================= */
+
+.page-turn {
+  animation: none !important;
+  transform: none !important;
+}
+
+
+/* =========================================================
+   FORM CONTAINER
+========================================================= */
+
+.auth-form-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+
+/* =========================================================
+   HEADING
+========================================================= */
+
+.auth-heading {
+  margin: 0;
+}
+
+.auth-heading.register-heading {
+  margin: 0;
+}
+
+
+/* =========================================================
+   SMALL LABEL
+========================================================= */
+
+.auth-small-label {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: #b8c4ff;
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  letter-spacing: 0.1px;
+}
+
+
+/* =========================================================
+   MAIN HEADING
+========================================================= */
+
+.auth-heading h1 {
+  margin: 12px 0 0;
+
+  color: #ffffff;
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 38px;
+
+  line-height: 1.12;
+
+  letter-spacing: -1.25px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   HEADING DESCRIPTION
+========================================================= */
+
+.auth-heading p {
+  margin-top: 11px;
+
+  max-width: 620px;
+
+  color:
+    rgba(226, 232, 255, 0.67);
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 14px;
+
+  line-height: 1.65;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.auth-form {
+  width: 100%;
+
+  margin-top: 26px;
+}
+
+
+/* =========================================================
+   INPUT GROUP
+========================================================= */
+
+.input-group {
+  margin-bottom: 17px;
+
+  min-width: 0;
+}
+
+.input-group label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color:
+    rgba(239, 242, 255, 0.84);
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  line-height: 1.3;
+}
+
+
+/* =========================================================
+   LABEL ROW
+========================================================= */
+
+.label-row {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 7px;
+}
+
+.label-row label {
+  margin-bottom: 0;
+}
+
+
+/* =========================================================
+   FORGOT PASSWORD
+========================================================= */
+
+.forgot-link {
+  color: #b9c5ff;
+
+  text-decoration: none;
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  transition:
+    color 0.18s ease;
+}
+
+.forgot-link:hover {
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   OPTIONAL LABEL
+========================================================= */
+
+.optional-label {
+  margin-left: 6px;
+
+  color:
+    rgba(220, 226, 255, 0.40);
+
+  font-size: 10px;
+
+  font-weight: 400;
+}
+
+
+/* =========================================================
+   INPUT WRAPPER
+========================================================= */
+
+.input-wrapper {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+
+  min-height: 48px;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.13);
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.055);
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.input-wrapper > svg {
+  flex-shrink: 0;
+
+  margin-left: 14px;
+
+  color:
+    rgba(220, 226, 255, 0.55);
+}
+
+.input-wrapper:focus-within {
+  border-color:
+    rgba(183, 195, 255, 0.62);
+
+  background:
+    rgba(255, 255, 255, 0.072);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(150, 165, 255, 0.07);
+}
+
+
+/* =========================================================
+   INPUTS
+========================================================= */
+
+.input-wrapper input,
+.input-wrapper select,
+.input-wrapper textarea {
+  width: 100%;
+  min-width: 0;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  padding:
+    12px 14px;
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 13px;
+
+  line-height: 1.4;
+}
+
+.input-wrapper input::placeholder,
+.input-wrapper textarea::placeholder {
+  color:
+    rgba(220, 226, 255, 0.36);
+}
+
+
+/* =========================================================
+   CHROME AUTOFILL FIX
+
+   Prevent white input backgrounds.
+========================================================= */
+
+.auth-page input:-webkit-autofill,
+.auth-page input:-webkit-autofill:hover,
+.auth-page input:-webkit-autofill:focus,
+.auth-page textarea:-webkit-autofill,
+.auth-page textarea:-webkit-autofill:hover,
+.auth-page textarea:-webkit-autofill:focus,
+.auth-page select:-webkit-autofill,
+.auth-page select:-webkit-autofill:hover,
+.auth-page select:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff;
+
+  -webkit-box-shadow:
+    0 0 0 1000px
+    #10182f
+    inset;
+
+  transition:
+    background-color 9999s ease-in-out 0s;
+}
+
+
+/* =========================================================
+   SELECT
+========================================================= */
+
+.select-wrapper {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+
+  min-height: 48px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.13);
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.055);
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.select-wrapper > svg {
+  flex-shrink: 0;
+
+  margin-left: 14px;
+
+  color:
+    rgba(220, 226, 255, 0.55);
+
+  pointer-events: none;
+}
+
+.select-wrapper:focus-within {
+  border-color:
+    rgba(183, 195, 255, 0.62);
+
+  background:
+    rgba(255, 255, 255, 0.072);
+}
+
+.select-wrapper select {
+  width: 100%;
+
+  min-width: 0;
+
+  padding:
+    12px 14px;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 13px;
+
+  cursor: pointer;
+
+  appearance: none;
+}
+
+.select-wrapper select option {
+  background: #10182f;
+
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   PASSWORD TOGGLE
+========================================================= */
+
+.password-toggle {
+  flex-shrink: 0;
+
+  width: 40px;
+  height: 40px;
+
+  margin-right: 3px;
+
+  border: none;
+
+  background: transparent;
+
+  color:
+    rgba(220, 226, 255, 0.55);
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  transition:
+    color 0.18s ease;
+}
+
+.password-toggle:hover {
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   INPUT VALID / INVALID
+========================================================= */
+
+.input-wrapper.input-valid {
+  border-color:
+    rgba(34, 197, 94, 0.50);
+}
+
+.input-wrapper.input-invalid {
+  border-color:
+    rgba(248, 113, 113, 0.46);
+}
+
+
+/* =========================================================
+   REGISTER TWO COLUMN
+========================================================= */
+
+.register-two-column {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  gap: 15px;
+}
+
+
+/* =========================================================
+   REGISTER PROGRESS
+========================================================= */
+
+.register-progress {
+  display: flex;
+
+  align-items: center;
+
+  width: 100%;
+
+  margin-top: 25px;
+
+  gap: 10px;
+}
+
+.register-step {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color:
+    rgba(220, 226, 255, 0.38);
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 11px;
+
+  font-weight: 500;
+
+  white-space: nowrap;
+}
+
+.register-step.active {
+  color: #ffffff;
+}
+
+.register-step-number {
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.15);
+
+  background:
+    rgba(255, 255, 255, 0.04);
+
+  font-size: 9px;
+
+  font-weight: 600;
+}
+
+.register-step.active
+.register-step-number {
+  border-color:
+    rgba(185, 197, 255, 0.50);
+
+  background:
+    rgba(160, 175, 255, 0.14);
+
+  color: #ffffff;
+}
+
+.register-progress-line {
+  flex: 1;
+
+  height: 1px;
+
+  background:
+    rgba(255, 255, 255, 0.10);
+}
+
+.register-progress-line.completed {
+  background:
+    rgba(190, 200, 255, 0.45);
+}
+
+
+/* =========================================================
+   REGISTER SECTION TITLE
+========================================================= */
+
+.register-section-title {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  margin-bottom: 15px;
+
+  color:
+    rgba(239, 242, 255, 0.86);
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 12px;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   REGISTER STEP CONTENT
+========================================================= */
+
+.register-step-content {
+  width: 100%;
+}
+
+
+/* =========================================================
+   PASSWORD RULES
+========================================================= */
+
+.password-rules {
+  width: 100%;
+
+  margin-top: 8px;
+
+  padding: 10px 11px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.08);
+
+  border-radius: 9px;
+
+  background:
+    rgba(3, 8, 22, 0.42);
+}
+
+.password-rule {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  min-height: 20px;
+
+  color:
+    rgba(248, 113, 113, 0.84);
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 10px;
+
+  line-height: 1.3;
+}
+
+.password-rule + .password-rule {
+  margin-top: 2px;
+}
+
+.password-rule-icon {
+  width: 16px;
+  height: 16px;
+
+  flex-shrink: 0;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  border:
+    1px solid
+    rgba(248, 113, 113, 0.40);
+
+  color: #f87171;
+
+  font-size: 9px;
+
+  font-weight: 700;
+}
+
+.password-rule.valid {
+  color:
+    rgba(74, 222, 128, 0.94);
+}
+
+.password-rule.valid
+.password-rule-icon {
+  border-color:
+    rgba(34, 197, 94, 0.50);
+
+  color: #4ade80;
+
+  background:
+    rgba(34, 197, 94, 0.08);
+}
+
+
+/* =========================================================
+   REGISTER NAVIGATION
+========================================================= */
+
+.register-navigation {
+  display: grid;
+
+  grid-template-columns:
+    auto
+    minmax(0, 1fr);
+
+  gap: 11px;
+
+  margin-top: 20px;
+}
+
+.register-back-button {
+  min-height: 48px;
+
+  padding: 0 17px;
+
+  border-radius: 10px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  background:
+    rgba(255, 255, 255, 0.045);
+
+  color:
+    rgba(235, 239, 255, 0.82);
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  font-family: inherit;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.register-back-button:hover {
+  background:
+    rgba(255, 255, 255, 0.08);
+
+  border-color:
+    rgba(255, 255, 255, 0.20);
+}
+
+
+/* =========================================================
+   MAIN BUTTON
+========================================================= */
+
+.auth-submit {
+  position: relative;
+
+  width: 100%;
+  height: 54px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 9px;
+
+  margin-top: 27px;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 14px;
+
+  background: #f4f6ff;
+
+  color: #101528;
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  overflow: hidden;
+
+  transition:
+    color 0.35s ease,
+    box-shadow 0.35s ease,
+    transform 0.25s ease;
+}
+
+
+/* GREEN LEFT SECTION */
+
+.auth-submit::before {
+  content: "";
+
+  position: absolute;
+
+  left: 4px;
+  top: 4px;
+
+  width: 46px;
+  height: 46px;
+
+  border-radius: 11px;
+
+  background: #262c74ae;
+
+  z-index: 0;
+
+  transition:
+    width 0.5s ease;
+}
+
+
+/* KEEP TEXT AND ICON ABOVE GREEN AREA */
+
+.auth-submit {
+  isolation: isolate;
+}
+
+.auth-submit > * {
+  position: relative;
+  z-index: 2;
+}
+
+
+/* HOVER — GREEN AREA EXPANDS */
+
+.auth-submit:hover::before {
+  width: calc(100% - 8px);
+}
+
+
+/* HOVER */
+
+.auth-submit:hover {
+  color: #07130b;
+
+  box-shadow:
+    0 10px 28px rgba(74, 222, 128, 0.22);
+
+  transform: translateY(-1px);
+}
+
+
+/* ICON */
+
+.auth-submit svg {
+  transition:
+    transform 0.35s ease;
+}
+
+
+/* ICON MOVES SLIGHTLY */
+
+.auth-submit:hover svg {
+  transform: translateX(3px);
+}
+
+
+/* CLICK */
+
+.auth-submit:active {
+  transform: translateY(1px);
+}
+
+/* =========================================================
+   TERMS
+========================================================= */
+
+.terms-row {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 8px;
+
+  margin-top: 6px;
+
+  color:
+    rgba(220, 226, 255, 0.56);
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+
+  cursor: pointer;
+}
+
+.terms-row input {
+  width: 14px;
+  height: 14px;
+
+  margin: 1px 0 0;
+
+  flex-shrink: 0;
+
+  accent-color: #a5b4fc;
+
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.auth-error {
+  margin-top: 12px;
+
+  padding: 10px 12px;
+
+  border-radius: 9px;
+
+  border:
+    1px solid
+    rgba(248, 113, 113, 0.24);
+
+  background:
+    rgba(248, 113, 113, 0.07);
+
+  color: #fecaca;
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   SECURITY NOTE
+========================================================= */
+
+.password-note,
+.secure-note {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-top: 11px;
+
+  color:
+    rgba(220, 226, 255, 0.46);
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 10px;
+
+  line-height: 1.45;
+}
+
+.secure-note svg {
+  flex-shrink: 0;
+
+  color: #4ade80;
+}
+
+
+/* =========================================================
+   LOGIN CREATE ACCOUNT
+========================================================= */
+
+.auth-create-account {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  margin-top: 18px;
+
+  color:
+    rgba(220, 226, 255, 0.55);
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 11px;
+}
+
+.auth-create-account a {
+  color: #dce2ff;
+
+  text-decoration: none;
+
+  font-weight: 600;
+
+  transition:
+    color 0.18s ease;
+}
+
+.auth-create-account a:hover {
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   OLD SWITCH SUPPORT
+========================================================= */
+
+.auth-switch {
+  margin-top: 17px;
+
+  text-align: center;
+
+  color:
+    rgba(220, 226, 255, 0.50);
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 11px;
+}
+
+.auth-switch a {
+  margin-left: 5px;
+
+  color: #dce2ff;
+
+  font-weight: 600;
+
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   OLD HOME LINK INSIDE CARD
+========================================================= */
+
+.back-home {
+  display: none !important;
+}
+
+
+/* =========================================================
+   RESUME HEADER
+========================================================= */
+
+.resume-header {
+  width: 100%;
+}
+
+.resume-header h1 {
+  margin:
+    11px 0 0;
+
+  color: #ffffff;
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 37px;
+
+  line-height: 1.12;
+
+  letter-spacing: -1.2px;
+
+  font-weight: 700;
+}
+
+.resume-header p {
+  margin-top: 11px;
+
+  color:
+    rgba(226, 232, 255, 0.67);
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 13px;
+
+  line-height: 1.65;
+}
+
+
+/* =========================================================
+   RESUME UPLOAD BOX
+========================================================= */
+
+.resume-upload-box {
+  width: 100%;
+
+  margin-top: 27px;
+
+  padding:
+    34px
+    28px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+
+  border:
+    1px dashed
+    rgba(190, 201, 255, 0.30);
+
+  border-radius:
+    20px
+    7px
+    20px
+    7px;
+
+  background:
+    rgba(255, 255, 255, 0.025);
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.resume-upload-box:hover {
+  border-color:
+    rgba(190, 201, 255, 0.46);
+
+  background:
+    rgba(255, 255, 255, 0.035);
+}
+
+
+/* =========================================================
+   RESUME UPLOAD ICON
+========================================================= */
+
+.resume-upload-icon {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+
+  background:
+    rgba(172, 185, 255, 0.10);
+
+  border:
+    1px solid
+    rgba(190, 201, 255, 0.18);
+
+  color: #cbd4ff;
+
+  margin-bottom: 15px;
+}
+
+
+/* =========================================================
+   RESUME UPLOAD TITLE
+========================================================= */
+
+.resume-upload-box h3 {
+  margin: 0;
+
+  color: #f4f6ff;
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 16px;
+
+  font-weight: 650;
+}
+
+.resume-upload-box p {
+  margin:
+    6px 0 17px;
+
+  color:
+    rgba(220, 226, 255, 0.48);
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   FILE INPUT
+========================================================= */
+
+.resume-file-input {
+  display: block;
+
+  width: max-content;
+  max-width: 100%;
+
+  margin: 0 auto;
+  margin-left: 175px;
+
+  color:
+    rgba(220, 226, 255, 0.55);
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 11px;
+
+  cursor: pointer;
+  text-align: center;
+}
+
+.resume-file-input::file-selector-button {
+  margin-right: 9px;
+
+  padding:
+    8px 13px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.15);
+
+  border-radius: 8px;
+
+  background:
+    rgba(255, 255, 255, 0.07);
+
+  color: #e9edff;
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  text-align: center;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.resume-file-input::file-selector-button:hover {
+  background:
+    rgba(255, 255, 255, 0.12);
+
+  border-color:
+    rgba(255, 255, 255, 0.24);
+}
+
+
+/* =========================================================
+   SELECTED RESUME
+========================================================= */
+
+.resume-selected-file {
+  width: 100%;
+
+  margin-top: 14px;
+
+  padding:
+    12px 14px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.11);
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.045);
+
+  color:
+    rgba(239, 242, 255, 0.82);
+
+  font-family:
+    "Inter",
+    system-ui,
+    sans-serif;
+
+  font-size: 11px;
+}
+
+.resume-selected-file > div {
+  min-width: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+}
+
+.resume-selected-file span {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.resume-selected-file button {
+  width: 30px;
+  height: 30px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+
+  border-radius: 7px;
+
+  background:
+    rgba(255, 255, 255, 0.04);
+
+  color:
+    rgba(220, 226, 255, 0.55);
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
+}
+
+.resume-selected-file button:hover {
+  background:
+    rgba(248, 113, 113, 0.10);
+
+  color: #fca5a5;
+}
+
+
+/* =========================================================
+   RESUME CONTINUE BUTTON
+========================================================= */
+
+.resume-page .auth-submit {
+  margin-top: 22px;
+}
+
+
+/* =========================================================
+   RESPONSIVE — TABLET
+========================================================= */
+
+@media (max-width: 800px) {
+
+  .auth-page {
+    padding:
+      92px
+      18px
+      30px;
+  }
+
+  .auth-navbar {
+    height: 70px;
+
+    padding:
+      0 22px;
+  }
+
+  .auth-form-panel {
+    width: min(680px, 100%);
+
+    padding:
+      35px
+      30px
+      32px;
+  }
+
+  .register-page .auth-form-panel {
+    width: min(760px, 100%);
+  }
+
+  .resume-page .auth-form-panel {
+    width: min(650px, 100%);
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE — MOBILE
+========================================================= */
+
+@media (max-width: 620px) {
+
+  .auth-page {
+    align-items: flex-start;
+
+    padding:
+      88px
+      12px
+      25px;
+  }
+
+  .auth-navbar {
+    height: 66px;
+
+    padding:
+      0 16px;
+  }
+
+  .auth-navbar-brand {
+    font-size: 180px;
+  }
+
+  .auth-navbar-icon {
+    width: 34px;
+    height: 34px;
+
+    border-radius: 9px;
+  }
+
+  .auth-home-link {
+    min-width: 65px;
+
+    height: 34px;
+
+    padding:
+      0 12px;
+
+    font-size: 11px;
+  }
+
+  .auth-form-panel,
+  .register-page .auth-form-panel,
+  .resume-page .auth-form-panel {
+    width: 100%;
+
+    padding:
+      29px
+      20px
+      27px;
+
+    border-radius:
+      27px
+      7px
+      27px
+      7px;
+  }
+
+  .auth-heading h1 {
+    font-size: 31px;
+  }
+
+  .resume-header h1 {
+    font-size: 31px;
+  }
+
+  .auth-heading p,
+  .resume-header p {
+    font-size: 12px;
+  }
+
+  .register-two-column {
+    grid-template-columns: 1fr;
+
+    gap: 0;
+  }
+
+  .register-progress {
+    gap: 7px;
+  }
+
+  .register-step span {
+    display: none;
+  }
+
+  .register-navigation {
+    grid-template-columns: 1fr;
+  }
+
+  .register-back-button {
+    order: 2;
+  }
+
+  .resume-upload-box {
+    padding:
+      28px
+      17px;
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE — SMALL MOBILE
+========================================================= */
+
+@media (max-width: 420px) {
+
+  .auth-page {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  .auth-navbar-brand {
+    gap: 7px;
+
+    font-size: 15px;
+  }
+
+  .auth-navbar-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .auth-form-panel,
+  .register-page .auth-form-panel,
+  .resume-page .auth-form-panel {
+    padding:
+      25px
+      16px
+      23px;
+  }
+
+  .auth-heading h1,
+  .resume-header h1 {
+    font-size: 28px;
+  }
+
+  .auth-heading p,
+  .resume-header p {
+    font-size: 11px;
+  }
+
+  .register-step-number {
+    width: 24px;
+    height: 24px;
+  }
+
+  .resume-upload-box h3 {
+    font-size: 14px;
+  }
+
+}
