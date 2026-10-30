@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {BrowserRouter, Routes, Route, Navigate, } from "react-router-dom";
 
 import Home from "../pages/Home";
 import Login from "../pages/Login";
@@ -15,41 +15,150 @@ import TypingPractice from "../pages/TypingPractice";
 import Progress from "../pages/Progress";
 import AskAI from "../pages/AskAI";
 
+import ProtectedRoute from "../components/ProtectedRoute";
+import SessionManager from "../components/SessionManager";
+
+
 function AppRoutes() {
   return (
     <BrowserRouter>
+
+      {/* Automatic inactivity logout */}
+      <SessionManager />
+
       <Routes>
 
-        <Route path="/" element={<Home />} />
+        {/* =================================================
+            PUBLIC PAGES
+        ================================================= */}
 
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/"
+          element={<Home />}
+        />
 
-        <Route path="/register" element={<Register />} />
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
-        <Route path="/resume" element={<Resume />} />
+        <Route
+          path="/register"
+          element={<Register />}
+        />
 
-        <Route path="/dashboard" element={<Dashboard />} />
 
-        <Route path="/profile" element={<Profile />} />
+        {/* =================================================
+            PROTECTED PAGES
+        ================================================= */}
 
-        <Route path="/settings" element={<Settings />} />
+        <Route
+          path="/resume"
+          element={
+            <ProtectedRoute>
+              <Resume />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/terms" element={<Terms />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/privacy" element={<Privacy />} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/interview" element={<Interview />} />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/speaking" element={<SpeakingPractice />} />
+        <Route
+          path="/terms"
+          element={
+            <ProtectedRoute>
+              <Terms />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/typing" element={<TypingPractice />} />
+        <Route
+          path="/privacy"
+          element={
+            <ProtectedRoute>
+              <Privacy />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/progress" element={<Progress />} />
+        <Route
+          path="/interview"
+          element={
+            <ProtectedRoute>
+              <Interview />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/ask-ai" element={<AskAI />} />
-        
+        <Route
+          path="/speaking"
+          element={
+            <ProtectedRoute>
+              <SpeakingPractice />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/typing"
+          element={
+            <ProtectedRoute>
+              <TypingPractice />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/progress"
+          element={
+            <ProtectedRoute>
+              <Progress />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/ask-ai"
+          element={
+            <ProtectedRoute>
+              <AskAI />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Unknown URL */}
+        <Route
+          path="*"
+          element={<Navigate to="/" replace />}
+        />
 
       </Routes>
+
     </BrowserRouter>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   ArrowRight,
@@ -13,7 +13,10 @@ import "../styles/auth.css";
 
 import Navbar from "../components/Navbar";
 
+import { loginUser } from "../services/authService";
+
 export default function Login() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState({
@@ -34,59 +37,87 @@ export default function Login() {
     setError("");
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
+  
     if (!form.email.trim()) {
       setError("Please enter your email address.");
       return;
     }
-
+  
     if (!form.password) {
       setError("Please enter your password.");
       return;
     }
+  
+    try {
+      const response = await loginUser({
+        email: form.email,
+        password: form.password,
+      });
+  
+      if (!response.success) {
+        setError(response.message);
+        return;
+      }
+  
+      localStorage.setItem(
+        "access_token",
+        response.token
+      );
+  
+      localStorage.setItem(
+        "userEmail",
+        form.email
+      );
+  
+      localStorage.setItem(
+        "role",
+        response.role
+      );
+  
+      // Only a login initiated from the public Ask AI widget returns to Ask AI.
+      // All normal logins retain the existing dashboard destination.
+      let hasAskAIHandoff = false;
+      try {
+        const handoff = JSON.parse(sessionStorage.getItem("askAiHandoff") || "null");
+        hasAskAIHandoff = Boolean(
+          handoff &&
+          handoff.createdAt &&
+          Date.now() - handoff.createdAt < 2 * 60 * 60 * 1000 &&
+          typeof handoff.pendingQuestion === "string" &&
+          handoff.pendingQuestion.trim()
+        );
+      } catch {
+        hasAskAIHandoff = false;
+      }
 
-    /*
-      TEMPORARY FRONTEND-ONLY LOGIN
+      // A normal login starts a fresh temporary Ask AI conversation.
+      // Keep the chat only when a valid public-to-private handoff is pending.
+      // This also clears stale chat left behind by an inactivity timeout.
+      if (!hasAskAIHandoff) {
+        sessionStorage.removeItem("aiAskAIConversation");
+        sessionStorage.removeItem("askAiHandoff");
+      }
 
-      Backend authentication will be connected later.
-
-      Planned backend flow:
-
-      POST /auth/login
-
-      Backend will:
-      1. Verify email
-      2. Verify hashed password
-      3. Create authentication session/token
-      4. Load user profile
-      5. Load saved resume
-      6. Redirect to dashboard
-    */
-
-    console.log("Login form:", form);
+      navigate(hasAskAIHandoff ? "/ask-ai" : "/dashboard");
+    } catch (error) {
+      setError(
+        error.response?.data?.detail ||
+        "Something went wrong. Please try again."
+      );
+    }
   };
 
   return (
     <div className="auth-page">
       <Navbar />
 
-
-
-      {/* =====================================================
-          LOGIN CONTENT
-      ===================================================== */}
-
       <main className="auth-main">
 
         <section className="auth-form-panel">
 
           <div className="auth-form-container">
-
-            {/* =================================================
-                HEADING
-            ================================================= */}
 
             <div className="auth-heading">
 
@@ -221,11 +252,8 @@ export default function Login() {
               <button
                 type="submit"
                 className="auth-submit"
-              >
-                <Link to="/dashboard">
+               >
                 Sign In
-                </Link>
-
                 <ArrowRight size={18} />
 
               </button>

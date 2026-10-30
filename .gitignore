@@ -18,3 +18,11 @@ frontend/.env
 # OS files
 .DS_Store
 Thumbs.db
+# Python virtual environments
+backend/Training-Model/
+backend/venv/
+backend/.venv/
+
+
+# User uploaded files
+backend/uploads/

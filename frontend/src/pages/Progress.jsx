@@ -1,766 +1,1191 @@
-import React, { useMemo, useState } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import {
   ArrowUpRight,
   BarChart3,
-  BrainCircuit,
   Check,
   ChevronDown,
   Clock3,
   Flame,
-  MessageSquareText,
-  Mic2,
   Target,
   TrendingUp,
   Trophy,
   Zap,
+  Mic,
+  Code2,
 } from "lucide-react";
+
+import { useNavigate } from "react-router-dom";
+
 import Navbar1 from "../components/Navbar1";
+
+import {
+  getProgressSummary,
+  getSpeakingProgressSummary,
+  getInterviewProgressSummary,
+} from "../services/progressService";
+
 import "../styles/progress.css";
 
-const readStorage = (key) => {
-  try {
-    return JSON.parse(localStorage.getItem(key) || "null");
-  } catch {
-    return null;
-  }
+
+const number = (
+  value,
+  fallback = 0
+) => {
+  const n = Number(value);
+
+  return Number.isFinite(n)
+    ? n
+    : fallback;
 };
 
-const number = (value, fallback = 0) => {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
-};
 
 const getDate = (item) =>
-  item?.completedAt ||
   item?.createdAt ||
+  item?.created_at ||
+  item?.completedAt ||
   item?.timestamp ||
   item?.date ||
   null;
 
-const getHistory = (historyKey, resultKey) => {
-  const history = readStorage(historyKey);
-  const result = readStorage(resultKey);
 
-  if (Array.isArray(history) && history.length) return history;
-  if (Array.isArray(result?.history) && result.history.length) {
-    return result.history;
-  }
-  return result ? [result] : [];
-};
+const normalizeHistory = (
+  items = []
+) =>
+  items.map((item) => ({
+    ...item,
 
-const calculateStreak = (items) => {
-  const dates = [
-    ...new Set(
-      items
-        .map(getDate)
-        .filter(Boolean)
-        .map((date) => new Date(date).toISOString().slice(0, 10))
+    wpm: number(item.wpm),
+
+    rawWpm: number(
+      item.rawWpm ??
+        item.raw_wpm
     ),
-  ]
-    .sort()
-    .reverse();
 
-  if (!dates.length) return 0;
+    accuracy: number(
+      item.accuracy
+    ),
 
-  let streak = 1;
+    errors: number(
+      item.errors
+    ),
 
-  for (let i = 0; i < dates.length - 1; i += 1) {
-    const current = new Date(dates[i]);
-    const previous = new Date(dates[i + 1]);
-    const difference =
-      (current - previous) / (1000 * 60 * 60 * 24);
+    correct: number(
+      item.correct ??
+        item.correct_characters
+    ),
 
-    if (difference <= 1) streak += 1;
-    else break;
-  }
+    characters: number(
+      item.characters
+    ),
 
-  return streak;
-};
+    createdAt: getDate(item),
+  }));
+
 
 const Progress = () => {
-  const [practice, setPractice] = useState("interview");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [period, setPeriod] = useState("30 Days");
-  const [periodOpen, setPeriodOpen] = useState(false);
 
-  const interviewHistory = getHistory(
-    "aiInterviewHistory",
-    "aiInterviewResult"
-  );
+  const navigate = useNavigate();
 
-  const speakingHistory = getHistory(
-    "aiSpeakingPracticeHistory",
-    "aiSpeakingPracticeResult"
-  );
+  const [period, setPeriod] =
+    useState("30 Days");
 
-  const typingHistory = getHistory(
-    "aiTypingPracticeHistory",
-    "aiTypingPracticeResult"
-  );
+  const [practiceType, setPracticeType] =
+    useState("typing");
 
-  const data = useMemo(() => {
-    if (practice === "speaking") {
-      const current = speakingHistory[0] || {};
+  const [practiceOpen, setPracticeOpen] =
+    useState(false);
 
-      const scores = speakingHistory
-        .map((item) =>
-          number(
-            item.overallScore ||
-              item.score ||
-              item.fluency
-          )
-        )
-        .filter((score) => score > 0);
+  const [periodOpen, setPeriodOpen] =
+    useState(false);
 
-      return {
-        name: "Speaking Practice",
-        shortName: "Speaking",
-        icon: Mic2,
-        history: speakingHistory,
-        sessions: speakingHistory.length,
-        streak: calculateStreak(speakingHistory),
-        overall: number(
-          current.overallScore ||
-            current.score ||
-            current.fluency
-        ),
-        highest: scores.length ? Math.max(...scores) : 0,
-        stats: [
-          ["Fluency", number(current.fluency)],
-          ["Pronunciation", number(current.pronunciation)],
-          ["Grammar", number(current.grammar)],
-          ["Vocabulary", number(current.vocabulary)],
-        ],
-        current,
+  const [history, setHistory] =
+    useState([]);
+
+  const [summary, setSummary] =
+    useState({
+      sessions: 0,
+      currentWpm: 0,
+      currentRawWpm: 0,
+      currentAccuracy: 0,
+      currentErrors: 0,
+      bestWpm: 0,
+      bestAccuracy: 0,
+      streak: 0,
+    });
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+
+  useEffect(() => {
+
+    let active = true;
+
+
+    const loadProgress =
+      async () => {
+
+        setLoading(true);
+        setError("");
+
+
+        try {
+
+          const response =
+            await (practiceType === "speaking"
+              ? getSpeakingProgressSummary(period)
+              : practiceType === "interview"
+              ? getInterviewProgressSummary(period)
+              : getProgressSummary(period));
+
+
+          if (!active) {
+            return;
+          }
+
+
+          setHistory(
+            normalizeHistory(
+              response?.history || []
+            )
+          );
+
+
+          setSummary({
+            sessions:
+              number(
+                response?.summary?.sessions
+              ),
+
+            currentWpm:
+              number(
+                response?.summary
+                  ?.currentWpm ??
+                response?.summary
+                  ?.current_wpm
+              ),
+
+            currentRawWpm:
+              number(
+                response?.summary
+                  ?.currentRawWpm ??
+                response?.summary
+                  ?.current_raw_wpm
+              ),
+
+            currentAccuracy:
+              number(
+                response?.summary
+                  ?.currentAccuracy ??
+                response?.summary
+                  ?.current_accuracy
+              ),
+
+            currentErrors:
+              number(
+                response?.summary
+                  ?.currentErrors ??
+                response?.summary
+                  ?.current_errors
+              ),
+
+            bestWpm:
+              number(
+                response?.summary
+                  ?.bestWpm ??
+                response?.summary
+                  ?.best_wpm
+              ),
+
+            bestAccuracy:
+              number(
+                response?.summary
+                  ?.bestAccuracy ??
+                response?.summary
+                  ?.best_accuracy
+              ),
+
+            streak:
+              number(response?.summary?.streak),
+
+            currentScore: number(response?.summary?.currentScore),
+            bestScore: number(response?.summary?.bestScore),
+            averageScore: number(response?.summary?.averageScore),
+            currentMode: response?.summary?.currentMode || "",
+            currentDifficulty: response?.summary?.currentDifficulty || "",
+            currentDuration: number(response?.summary?.currentDuration),
+          });
+
+        } catch (requestError) {
+
+          console.error(
+            "Failed to load progress:",
+            requestError
+          );
+
+
+          if (!active) {
+            return;
+          }
+
+
+          setHistory([]);
+
+          setSummary({
+            sessions: 0,
+            currentWpm: 0,
+            currentRawWpm: 0,
+            currentAccuracy: 0,
+            currentErrors: 0,
+            bestWpm: 0,
+            bestAccuracy: 0,
+            streak: 0,
+            currentScore: 0, bestScore: 0, averageScore: 0,
+            currentMode: "", currentDifficulty: "", currentDuration: 0,
+          });
+
+
+          setError(
+            requestError
+              ?.response
+              ?.data
+              ?.detail ||
+            "Unable to load your progress right now."
+          );
+
+        } finally {
+
+          if (active) {
+            setLoading(false);
+          }
+
+        }
       };
-    }
 
-    if (practice === "typing") {
-      const current = typingHistory[0] || {};
 
-      const wpmValues = typingHistory
-        .map((item) => number(item.wpm))
-        .filter((value) => value > 0);
+    loadProgress();
 
-      const accuracyValues = typingHistory
-        .map((item) => number(item.accuracy))
-        .filter((value) => value > 0);
 
-      return {
-        name: "Typing Practice",
-        shortName: "Typing",
-        icon: Zap,
-        history: typingHistory,
-        sessions: typingHistory.length,
-        streak: calculateStreak(typingHistory),
-        overall: number(current.accuracy),
-        highest: accuracyValues.length
-          ? Math.max(...accuracyValues)
-          : 0,
-        bestWpm: wpmValues.length ? Math.max(...wpmValues) : 0,
-        stats: [
-          ["Current WPM", number(current.wpm), "WPM"],
-          ["Accuracy", number(current.accuracy), "%"],
-          ["Raw WPM", number(current.rawWpm), "WPM"],
-          ["Errors", number(current.errors), ""],
-        ],
-        current,
-      };
-    }
-
-    const current = interviewHistory[0] || {};
-
-    const scores = interviewHistory
-      .map((item) =>
-        number(
-          item.overallScore ||
-            item.score ||
-            item.averageScore
-        )
-      )
-      .filter((score) => score > 0);
-
-    return {
-      name: "AI Interview",
-      shortName: "Interview",
-      icon: MessageSquareText,
-      history: interviewHistory,
-      sessions: interviewHistory.length,
-      streak: calculateStreak(interviewHistory),
-      overall: number(
-        current.overallScore ||
-          current.score ||
-          current.averageScore
-      ),
-      highest: scores.length ? Math.max(...scores) : 0,
-      stats: [
-        [
-          "Average Score",
-          number(
-            current.averageScore ||
-              current.overallScore ||
-              current.score
-          ),
-          "%",
-        ],
-        [
-          "Highest Score",
-          scores.length ? Math.max(...scores) : 0,
-          "%",
-        ],
-        [
-          "Questions Answered",
-          number(
-            current.questionsAnswered ||
-              current.answeredQuestions
-          ),
-          "",
-        ],
-        [
-          "Skipped",
-          number(
-            current.skipped ||
-              current.skippedQuestions
-          ),
-          "",
-        ],
-      ],
-      current,
+    return () => {
+      active = false;
     };
-  }, [practice, interviewHistory, speakingHistory, typingHistory]);
 
-  const practiceOptions = [
-    {
-      id: "interview",
-      label: "Interview",
-      icon: MessageSquareText,
-    },
-    {
-      id: "speaking",
-      label: "Speaking Practice",
-      icon: Mic2,
-    },
-    {
-      id: "typing",
-      label: "Typing Practice",
-      icon: Zap,
-    },
+  }, [period, practiceType]);
+
+
+  const hasData =
+    history.length > 0;
+
+
+  const chartHistory =
+    useMemo(
+      () =>
+        [...history]
+          .slice(0, 8)
+          .reverse(),
+      [history]
+    );
+
+
+  const stats = practiceType === "speaking"
+    ? [
+        ["Latest Score", summary.currentScore, "%"],
+        ["Best Score", summary.bestScore, "%"],
+        ["Average Score", summary.averageScore, "%"],
+        ["Latest Duration", summary.currentDuration ? Math.round(summary.currentDuration) : 0, " sec"],
+      ]
+    : practiceType === "interview"
+    ? [
+        ["Latest Interview Score", summary.currentScore, "%"],
+        ["Best Interview Score", summary.bestScore, "%"],
+        ["Average Interview Score", summary.averageScore, "%"],
+        ["Latest Duration", summary.currentDuration ? Math.round(summary.currentDuration / 60) : 0, " min"],
+      ]
+    : [
+        ["Current WPM", summary.currentWpm, " WPM"],
+        ["Accuracy", summary.currentAccuracy, "%"],
+        ["Raw WPM", summary.currentRawWpm, " WPM"],
+        ["Errors", summary.currentErrors, ""],
+      ];
+
+
+  const periodOptions = [
+    "7 Days",
+    "30 Days",
+    "90 Days",
+    "All Time",
   ];
 
-  const selectedOption = practiceOptions.find(
-    (item) => item.id === practice
-  );
-
-  const hasData = data.sessions > 0;
 
   return (
     <Navbar1>
+
       <main className="app-content progress-content">
+
+        {/* =====================================================
+            HEADER
+        ===================================================== */}
+
         <div className="progress-header">
+
           <div>
+
             <span className="progress-eyebrow">
               PERFORMANCE CENTER
             </span>
 
-            <h1>Your Progress</h1>
+            <h1>
+              Your Progress
+            </h1>
 
             <p>
-              Track your improvement and understand your
-              performance across each practice area.
+              {practiceType === "speaking"
+                ? "Track your speaking scores, feedback and improvement across completed sessions."
+                : practiceType === "interview"
+                ? "Track your interview scores, question performance and improvement across completed interviews."
+                : "Track your typing speed, accuracy and improvement across your completed practice sessions."}
             </p>
+
           </div>
 
+
           <div className="progress-controls">
-            <span className="control-label">Practice</span>
+
+            <span className="control-label">
+              Practice
+            </span>
+
 
             <div className="practice-selector">
+
               <button
                 type="button"
                 className="practice-selector-button"
                 onClick={() =>
-                  setDropdownOpen((value) => !value)
+                  setPracticeOpen(
+                    (value) => !value
+                  )
                 }
               >
-                {selectedOption && (
-                  <selectedOption.icon size={17} />
-                )}
 
-                <span>{selectedOption?.label}</span>
+                {practiceType === "speaking" ? <Mic size={17} /> : practiceType === "interview" ? <Code2 size={17} /> : <Zap size={17} />}
+
+                <span>
+                  {practiceType === "speaking" ? "Speaking Practice" : practiceType === "interview" ? "Interview Practice" : "Typing Practice"}
+                </span>
 
                 <ChevronDown
                   size={16}
-                  className={dropdownOpen ? "rotate" : ""}
+                  className={
+                    practiceOpen
+                      ? "rotate"
+                      : ""
+                  }
                 />
+
               </button>
 
-              {dropdownOpen && (
+
+              {practiceOpen && (
+
                 <div className="practice-dropdown">
-                  {practiceOptions.map((option) => {
-                    const Icon = option.icon;
 
-                    return (
-                      <button
-                        type="button"
-                        key={option.id}
-                        className={
-                          practice === option.id
-                            ? "selected"
-                            : ""
-                        }
-                        onClick={() => {
-                          setPractice(option.id);
-                          setDropdownOpen(false);
-                        }}
-                      >
-                        <Icon size={16} />
-                        <span>{option.label}</span>
+                  <button
+                    type="button"
+                    className={practiceType === "typing" ? "selected" : ""}
+                    onClick={() => { setPracticeType("typing"); setPracticeOpen(false); }}
+                  >
+                    <Zap size={16} />
+                    <span>Typing Practice</span>
+                    {practiceType === "typing" && <Check size={15} />}
+                  </button>
+                  <button
+                    type="button"
+                    className={practiceType === "speaking" ? "selected" : ""}
+                    onClick={() => { setPracticeType("speaking"); setPracticeOpen(false); }}
+                  >
+                    <Mic size={16} />
+                    <span>Speaking Practice</span>
+                    {practiceType === "speaking" && <Check size={15} />}
+                  </button>
+                  <button
+                    type="button"
+                    className={practiceType === "interview" ? "selected" : ""}
+                    onClick={() => { setPracticeType("interview"); setPracticeOpen(false); }}
+                  >
+                    <Code2 size={16} />
+                    <span>Interview Practice</span>
+                    {practiceType === "interview" && <Check size={15} />}
+                  </button>
 
-                        {practice === option.id && (
-                          <Check size={15} />
-                        )}
-                      </button>
-                    );
-                  })}
                 </div>
+
               )}
+
             </div>
+
           </div>
+
         </div>
 
-        <section className="progress-summary-grid">
-          <div className="progress-stat-card main-score-card">
-            <div className="stat-top">
-              <span>Overall Score</span>
-              <Target size={19} />
-            </div>
 
-            <div className="main-score">
-              <strong>
-                {data.overall ? `${data.overall}%` : "—"}
-              </strong>
+        {/* =====================================================
+            ERROR
+        ===================================================== */}
+
+        {error && (
+
+          <div
+            className="progress-panel"
+            style={{
+              marginBottom: "17px",
+              color: "#fca5a5",
+            }}
+          >
+            {error}
+          </div>
+
+        )}
+
+
+        {/* =====================================================
+            SUMMARY CARDS
+        ===================================================== */}
+
+        <section className="progress-summary-grid">
+
+          <div className="progress-stat-card main-score-card">
+
+            <div className="stat-top">
 
               <span>
-                {hasData
-                  ? `Current ${data.shortName.toLowerCase()} performance`
-                  : `Complete a ${data.shortName.toLowerCase()} session to begin`}
+                Overall Score
               </span>
+
+              <Target size={19} />
+
             </div>
+
+
+            <div className="main-score">
+
+              <strong>
+
+                {loading
+                  ? "..."
+                  : practiceType === "typing"
+                  ? (summary.currentAccuracy ? `${summary.currentAccuracy}%` : "—")
+                  : (summary.currentScore ? `${summary.currentScore}%` : "—")}
+
+              </strong>
+
+
+              <span>
+
+                {hasData
+                  ? (practiceType === "speaking" ? "Latest speaking score" : practiceType === "interview" ? "Latest interview score" : "Current typing accuracy")
+                  : (practiceType === "speaking" ? "Complete a speaking test to begin" : practiceType === "interview" ? "Complete an interview to begin" : "Complete a typing session to begin")}
+
+              </span>
+
+            </div>
+
           </div>
 
+
           <div className="progress-stat-card">
+
             <div className="stat-top">
-              <span>Sessions</span>
+
+              <span>
+                Sessions
+              </span>
+
               <BarChart3 size={19} />
+
             </div>
 
+
             <strong className="big-stat">
-              {data.sessions}
+
+              {loading
+                ? "..."
+                : summary.sessions}
+
             </strong>
 
+
             <span className="stat-helper">
+
               {hasData
-                ? `${data.shortName} sessions recorded`
+                ? `${practiceType === "speaking" ? "Speaking" : practiceType === "interview" ? "Interview" : "Typing"} sessions recorded`
                 : "No sessions yet"}
+
             </span>
 
+
             <div className="stat-bottom">
+
               <TrendingUp size={15} />
-              <span>Keep practicing to build history</span>
+
+              <span>
+                Keep practicing to
+                build history
+              </span>
+
             </div>
+
           </div>
 
+
           <div className="progress-stat-card">
+
             <div className="stat-top">
-              <span>Current Streak</span>
+
+              <span>
+                Current Streak
+              </span>
+
               <Flame size={19} />
+
             </div>
+
 
             <strong className="big-stat">
-              {data.streak}
+
+              {loading
+                ? "..."
+                : summary.streak}
+
             </strong>
 
+
             <span className="stat-helper">
-              {data.streak === 1 ? "day" : "days"}
+
+              {summary.streak === 1
+                ? "day"
+                : "days"}
+
             </span>
 
+
             <div className="stat-bottom">
+
               <Flame size={15} />
-              <span>Practice consistently</span>
+
+              <span>
+                Practice consistently
+              </span>
+
             </div>
+
           </div>
+
 
           <div className="progress-stat-card">
+
             <div className="stat-top">
-              <span>Highest Score</span>
+
+              <span>
+                {practiceType === "speaking" ? "Best Speaking Score" : practiceType === "interview" ? "Best Interview Score" : "Best WPM"}
+              </span>
+
               <Trophy size={19} />
+
             </div>
+
 
             <strong className="big-stat">
-              {data.highest ? `${data.highest}%` : "—"}
+
+              {loading
+                ? "..."
+                : practiceType === "typing"
+                ? (summary.bestWpm || "—")
+                : (summary.bestScore || "—")}
+
             </strong>
 
+
             <span className="stat-helper">
-              Best recorded performance
+              {practiceType === "speaking" ? "Best recorded speaking score" : practiceType === "interview" ? "Best recorded interview score" : "Best recorded typing speed"}
             </span>
 
+
             <div className="stat-bottom">
+
               <Trophy size={15} />
-              <span>Keep pushing your best</span>
+
+              <span>
+                Keep pushing your best
+              </span>
+
             </div>
+
           </div>
+
         </section>
 
+
+        {/* =====================================================
+            PERFORMANCE CHART
+        ===================================================== */}
+
         <section className="progress-panel performance-panel">
+
           <div className="panel-heading">
+
             <div>
+
               <span className="panel-label">
-                {data.shortName.toUpperCase()}
+                {practiceType === "speaking" ? "SPEAKING" : practiceType === "interview" ? "INTERVIEW" : "TYPING"}
               </span>
 
-              <h2>Performance Overview</h2>
+              <h2>
+                {practiceType === "speaking" ? "Speaking Performance Overview" : practiceType === "interview" ? "Interview Performance Overview" : "Performance Overview"}
+              </h2>
 
               <p>
-                Your {data.shortName.toLowerCase()} performance
-                for the selected period.
+                {practiceType === "speaking"
+                  ? "Your speaking scores for the selected period."
+                  : practiceType === "interview"
+                  ? "Your completed interview scores for the selected period."
+                  : "Your typing performance for the selected period."}
               </p>
+
             </div>
 
+
             <div className="period-selector">
+
               <button
                 type="button"
                 onClick={() =>
-                  setPeriodOpen((value) => !value)
+                  setPeriodOpen(
+                    (value) => !value
+                  )
                 }
               >
+
                 {period}
+
                 <ChevronDown size={15} />
+
               </button>
 
+
               {periodOpen && (
+
                 <div className="period-menu">
-                  {[
-                    "7 Days",
-                    "30 Days",
-                    "90 Days",
-                    "All Time",
-                  ].map((item) => (
-                    <button
-                      type="button"
-                      key={item}
-                      className={
-                        period === item ? "active" : ""
-                      }
-                      onClick={() => {
-                        setPeriod(item);
-                        setPeriodOpen(false);
-                      }}
-                    >
-                      {item}
-                    </button>
-                  ))}
+
+                  {periodOptions.map(
+                    (item) => (
+
+                      <button
+                        type="button"
+                        key={item}
+                        className={
+                          period === item
+                            ? "active"
+                            : ""
+                        }
+                        onClick={() => {
+
+                          setPeriod(item);
+
+                          setPeriodOpen(
+                            false
+                          );
+
+                        }}
+                      >
+                        {item}
+                      </button>
+
+                    )
+                  )}
+
                 </div>
+
               )}
+
             </div>
+
           </div>
 
+
           <div className="performance-chart">
+
             <div className="chart-y-labels">
+
               <span>100</span>
               <span>75</span>
               <span>50</span>
               <span>25</span>
               <span>0</span>
+
             </div>
 
+
             <div className="chart-area">
+
               <div className="chart-grid-line" />
               <div className="chart-grid-line" />
               <div className="chart-grid-line" />
               <div className="chart-grid-line" />
 
-              {data.history.length ? (
-                <div className="chart-bars">
-                  {data.history
-                    .slice(0, 8)
-                    .reverse()
-                    .map((item, index) => {
-                      const score = number(
-                        item.overallScore ||
-                          item.score ||
-                          item.averageScore ||
-                          item.accuracy ||
-                          item.fluency
-                      );
 
-                      return (
-                        <div
-                          className="chart-column"
-                          key={`${index}-${score}`}
-                        >
-                          <div
-                            className="chart-bar"
-                            style={{
-                              height: `${Math.max(
-                                score,
-                                4
-                              )}%`,
-                            }}
-                          >
-                            <span>
-                              {score
-                                ? `${score}%`
-                                : "—"}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              ) : (
+              {loading ? (
+
                 <div className="chart-empty">
+
                   <BarChart3 size={32} />
 
                   <strong>
-                    No {data.shortName.toLowerCase()} history yet
+                    Loading progress...
+                  </strong>
+
+                </div>
+
+              ) : chartHistory.length ? (
+
+                <div className="chart-bars">
+
+                  {chartHistory.map(
+                    (item, index) => {
+
+                      const score = practiceType === "typing"
+                        ? number(item.accuracy)
+                        : number(item.overallScore ?? item.score);
+
+
+                      return (
+
+                        <div
+                          className="chart-column"
+                          key={`${
+                            item.id || index
+                          }-${score}`}
+                        >
+
+                          <div
+                            className="chart-bar"
+                            style={{
+                              height: `${
+                                Math.max(
+                                  score,
+                                  4
+                                )
+                              }%`,
+                            }}
+                          >
+
+                            <span>
+
+                              {score
+                                ? `${score}%`
+                                : "—"}
+
+                            </span>
+
+                          </div>
+
+                        </div>
+
+                      );
+
+                    }
+                  )}
+
+                </div>
+
+              ) : (
+
+                <div className="chart-empty">
+
+                  <BarChart3 size={32} />
+
+                  <strong>
+                    {practiceType === "speaking" ? "No speaking history yet" : practiceType === "interview" ? "No interview history yet" : "No typing history yet"}
                   </strong>
 
                   <span>
-                    Complete your first{" "}
-                    {data.shortName.toLowerCase()} session
-                    to start seeing your performance trend.
+                    {practiceType === "speaking"
+                      ? "Complete a speaking test to start seeing your performance trend."
+                      : practiceType === "interview"
+                      ? "Complete an interview to start seeing your performance trend."
+                      : "Complete a typing session to start seeing your performance trend."}
                   </span>
+
                 </div>
+
               )}
+
             </div>
+
           </div>
+
         </section>
 
+
+        {/* =====================================================
+            DETAILED METRICS
+        ===================================================== */}
+
         <section className="progress-panel statistics-panel">
+
           <div className="panel-heading compact">
+
             <div>
+
               <span className="panel-label">
                 DETAILED METRICS
               </span>
 
               <h2>
-                {data.name} Statistics
+                {practiceType === "speaking" ? "Speaking Practice Statistics" : practiceType === "interview" ? "Interview Practice Statistics" : "Typing Practice Statistics"}
               </h2>
 
               <p>
-                Key measurements from your latest recorded
-                session.
+                {practiceType === "speaking"
+                  ? "Scores and duration from your latest completed speaking test."
+                  : practiceType === "interview"
+                  ? "Scores and duration from your latest completed interview."
+                  : "Key measurements from your latest recorded session."}
               </p>
+
             </div>
+
           </div>
+
 
           <div className="detail-stat-grid">
-            {data.stats.map(([label, value, suffix]) => (
-              <div className="detail-stat" key={label}>
-                <span>{label}</span>
 
-                <strong>
-                  {value
-                    ? `${value}${suffix || ""}`
-                    : "—"}
-                </strong>
-              </div>
-            ))}
+            {stats.map(
+              ([label, value, suffix]) => (
+
+                <div
+                  className="detail-stat"
+                  key={label}
+                >
+
+                  <span>
+                    {label}
+                  </span>
+
+                  <strong>
+
+                    {loading
+                      ? "..."
+                      : value
+                      ? `${value}${suffix || ""}`
+                      : "—"}
+
+                  </strong>
+
+                </div>
+
+              )
+            )}
+
           </div>
+
         </section>
 
+
+        {/* =====================================================
+            INSIGHTS + RECENT SESSIONS
+        ===================================================== */}
+
         <section className="progress-two-column">
+
           <div className="progress-panel insight-panel">
+
             <div className="panel-heading compact">
+
               <div>
+
                 <span className="panel-label">
                   YOUR PERFORMANCE
                 </span>
 
-                <h2>What This Means</h2>
+                <h2>
+                  What This Means
+                </h2>
+
               </div>
+
             </div>
 
+
             {hasData ? (
+
               <>
+
                 <div className="insight-block strength">
+
                   <div className="insight-icon">
                     <Trophy size={18} />
                   </div>
 
+
                   <div>
-                    <span>Best recorded score</span>
+
+                    <span>
+                      {practiceType === "speaking" ? "Best speaking score" : practiceType === "interview" ? "Best interview score" : "Best typing speed"}
+                    </span>
 
                     <strong>
-                      {data.highest}%
+                      {practiceType === "typing" ? `${summary.bestWpm} WPM` : `${summary.bestScore}%`}
                     </strong>
 
                     <p>
-                      This is your highest recorded
-                      {` ${data.shortName.toLowerCase()}`}
-                      performance so far.
+                      {practiceType === "speaking"
+                        ? "This is your highest recorded speaking score in the selected period."
+                        : practiceType === "interview"
+                        ? "This is your highest recorded interview score in the selected period."
+                        : "This is your highest recorded typing speed in the selected period."}
                     </p>
+
                   </div>
+
                 </div>
 
+
                 <div className="insight-block neutral">
+
                   <div className="insight-icon">
                     <TrendingUp size={18} />
                   </div>
 
+
                   <div>
-                    <span>Keep improving</span>
+
+                    <span>
+                      {practiceType === "speaking" ? "Average speaking score" : practiceType === "interview" ? "Average interview score" : "Current accuracy"}
+                    </span>
 
                     <strong>
-                      {data.sessions} session
-                      {data.sessions === 1 ? "" : "s"} completed
+                      {practiceType === "typing" ? `${summary.currentAccuracy}%` : `${summary.averageScore}%`}
                     </strong>
 
                     <p>
-                      More sessions will give the platform
-                      enough data to identify improvement
-                      trends accurately.
+                      {practiceType === "speaking"
+                        ? "Review your feedback and improvement suggestions after each test."
+                        : practiceType === "interview"
+                        ? "Review question-level feedback and suggested answers after each interview."
+                        : "Keep practicing to improve both speed and accuracy together."}
                     </p>
+
                   </div>
+
                 </div>
+
               </>
+
             ) : (
+
               <div className="insight-empty">
+
                 <div className="insight-icon">
                   <BarChart3 size={19} />
                 </div>
 
                 <strong>
-                  Your insights will appear here
+                  Your insights will
+                  appear here
                 </strong>
 
                 <p>
-                  Complete a {data.shortName.toLowerCase()}
-                  practice session and your performance
-                  data will be shown here.
+                  {practiceType === "speaking"
+                    ? "Complete a speaking test and your scores and feedback will appear here."
+                    : practiceType === "interview"
+                    ? "Complete an interview and your scorecard will appear here."
+                    : "Complete a typing practice session and your performance data will be shown here."}
                 </p>
+
               </div>
+
             )}
+
           </div>
 
+
           <div className="progress-panel activity-panel">
+
             <div className="panel-heading compact">
+
               <div>
+
                 <span className="panel-label">
                   HISTORY
                 </span>
 
-                <h2>Recent Sessions</h2>
+                <h2>
+                  Recent Sessions
+                </h2>
+
               </div>
+
             </div>
 
-            {data.history.length ? (
-              <div className="activity-list">
-                {data.history
-                  .slice(0, 4)
-                  .map((item, index) => {
-                    const score = number(
-                      item.overallScore ||
-                        item.score ||
-                        item.averageScore ||
-                        item.accuracy ||
-                        item.fluency
-                    );
 
-                    return (
+            {history.length ? (
+
+              <div className="activity-list">
+
+                {history
+                  .slice(0, 4)
+                  .map(
+                    (item, index) => (
+
                       <div
                         className="activity-row"
-                        key={index}
+                        key={`${
+                          item.id || index
+                        }-${item.createdAt}`}
                       >
+
                         <div className="activity-icon">
-                          <data.icon size={17} />
+                          {practiceType === "speaking" ? <Mic size={17} /> : practiceType === "interview" ? <Code2 size={17} /> : <Zap size={17} />}
                         </div>
 
+
                         <div className="activity-main">
+
                           <strong>
-                            {data.name} session
+                            {practiceType === "speaking"
+                              ? `${item.mode || "General"} Speaking Practice (${item.difficulty || "easy"})`
+                              : practiceType === "interview"
+                              ? `Interview Practice (${item.difficulty || "medium"})`
+                              : "Typing Practice session"}
                           </strong>
 
                           <span>
-                            {getDate(item)
-                              ? new Date(
-                                  getDate(item)
-                                ).toLocaleDateString()
+
+                            {item.createdAt
+                              ? new Date(item.createdAt).toLocaleString()
                               : "Recorded session"}
+                            {practiceType === "interview" && ` · ${item.answeredQuestions || 0}/${item.totalQuestions || 0} answered`}
+
                           </span>
+
                         </div>
 
+
                         <div className="activity-score">
+
                           <strong>
-                            {score ? `${score}%` : "—"}
+
+                            {practiceType === "typing"
+                              ? (item.accuracy ? `${item.accuracy}%` : "—")
+                              : ((item.overallScore ?? item.score) != null ? `${item.overallScore ?? item.score}%` : "—")}
+
                           </strong>
+
                         </div>
+
 
                         <ArrowUpRight
                           size={16}
                           className="activity-arrow"
                         />
+
                       </div>
-                    );
-                  })}
+
+                    )
+                  )}
+
               </div>
+
             ) : (
+
               <div className="activity-empty">
+
                 <div className="empty-icon">
                   <Clock3 size={21} />
                 </div>
 
-                <strong>No sessions yet</strong>
+                <strong>
+                  No sessions yet
+                </strong>
 
                 <span>
-                  Your completed{" "}
-                  {data.shortName.toLowerCase()} sessions
-                  will appear here.
+                  {practiceType === "speaking"
+                    ? "Your completed speaking tests will appear here."
+                    : practiceType === "interview"
+                    ? "Your completed interviews will appear here."
+                    : "Your completed typing sessions will appear here."}
                 </span>
+
               </div>
+
             )}
+
           </div>
+
         </section>
 
+
+        {/* =====================================================
+            NEXT STEP
+        ===================================================== */}
+
         <section className="recommendation-card">
+
           <div className="recommendation-icon">
-            {React.createElement(data.icon, { size: 21 })}
+            <Zap size={21} />
           </div>
 
+
           <div className="recommendation-content">
-            <span>NEXT STEP</span>
+
+            <span>
+              NEXT STEP
+            </span>
 
             <h2>
-              Continue your {data.shortName.toLowerCase()}
-              practice
+              {practiceType === "speaking" ? "Continue your speaking practice" : practiceType === "interview" ? "Continue your interview practice" : "Continue your typing practice"}
             </h2>
 
             <p>
-              Keep completing sessions to build a reliable
-              performance history and identify meaningful
-              improvement trends.
+              {practiceType === "speaking"
+                ? "Keep reviewing your scores, strengths and improvement suggestions after each completed test."
+                : practiceType === "interview"
+                ? "Review your scorecards and question-level feedback to improve your next interview."
+                : "Keep completing sessions to build a reliable performance history."}
             </p>
+
           </div>
+
 
           <button
             type="button"
-            onClick={() => {
-              const path =
-                practice === "interview"
-                  ? "/interview"
-                  : practice === "speaking"
-                  ? "/speaking"
-                  : "/typing";
-
-              window.location.href = path;
-            }}
+            onClick={() =>
+              navigate(practiceType === "speaking" ? "/speaking" : practiceType === "interview" ? "/interview" : "/typing")
+            }
           >
+
             Practice Now
+
             <ArrowUpRight size={16} />
+
           </button>
+
         </section>
+
       </main>
+
     </Navbar1>
   );
 };
+
 
 export default Progress;

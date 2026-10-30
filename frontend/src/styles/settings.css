@@ -558,3 +558,386 @@
       gap: 5px;
     }
   }
+
+  /* =========================================================
+   SETTINGS ERROR MESSAGE
+   ========================================================= */
+
+.settings-error {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  width: fit-content;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+
+  border: 1px solid rgba(251, 79, 93, 0.22);
+  border-radius: 9px;
+
+  background: rgba(251, 79, 93, 0.08);
+  color: #ff8b94;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   MODAL OVERLAY
+   ========================================================= */
+
+.settings-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+  box-sizing: border-box;
+
+  background: rgba(3, 10, 20, 0.72);
+
+  backdrop-filter: blur(4px);
+}
+
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.settings-modal {
+  width: 100%;
+  max-width: 520px;
+  max-height: calc(100vh - 48px);
+
+  overflow-y: auto;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 15px;
+
+  background: #0c1a2b;
+
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.40);
+}
+
+
+/* =========================================================
+   MODAL HEADER
+   ========================================================= */
+
+.settings-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 22px 22px 18px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+
+.settings-modal-eyebrow {
+  display: block;
+  margin-bottom: 5px;
+
+  color: #68778d;
+
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 1.15px;
+}
+
+
+.settings-modal-header h2 {
+  margin: 0;
+
+  color: #edf2f8;
+
+  font-size: 19px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+
+.settings-modal-header p {
+  margin: 5px 0 0;
+
+  color: #78879c;
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   CLOSE BUTTON
+   ========================================================= */
+
+.settings-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+
+  padding: 0;
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+
+  background: rgba(255, 255, 255, 0.025);
+  color: #8794a7;
+
+  cursor: pointer;
+}
+
+
+.settings-modal-close:hover {
+  border-color: rgba(139, 92, 246, 0.30);
+  background: rgba(139, 92, 246, 0.07);
+  color: #b9adff;
+}
+
+
+/* =========================================================
+   MODAL FORM
+   ========================================================= */
+
+.settings-modal-form {
+  padding: 22px;
+}
+
+
+.settings-input-group {
+  margin-bottom: 17px;
+}
+
+
+.settings-input-group label {
+  display: block;
+  margin-bottom: 7px;
+
+  color: #b9c3d1;
+
+  font-size: 12px;
+  font-weight: 650;
+}
+
+
+.settings-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  min-height: 44px;
+  box-sizing: border-box;
+
+  padding: 0 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 9px;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  color: #718099;
+}
+
+
+.settings-input-wrapper:focus-within {
+  border-color: rgba(139, 92, 246, 0.42);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+
+.settings-input-wrapper input {
+  width: 100%;
+
+  padding: 12px 0;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #edf2f8;
+
+  font: inherit;
+  font-size: 13px;
+}
+
+
+.settings-input-wrapper input::placeholder {
+  color: #59677b;
+}
+
+
+/* =========================================================
+   PASSWORD SHOW / HIDE
+   ========================================================= */
+
+.settings-password-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 auto;
+
+  padding: 4px;
+
+  border: 0;
+
+  background: transparent;
+  color: #718099;
+
+  cursor: pointer;
+}
+
+
+.settings-password-toggle:hover {
+  color: #b9adff;
+}
+
+
+/* =========================================================
+   MODAL ACTIONS
+   ========================================================= */
+
+.settings-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  gap: 9px;
+
+  margin-top: 8px;
+}
+
+
+.settings-secondary-button,
+.settings-primary-button {
+  min-height: 40px;
+
+  padding: 0 15px;
+
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+
+  cursor: pointer;
+}
+
+
+.settings-secondary-button {
+  border: 1px solid rgba(255, 255, 255, 0.075);
+
+  background: rgba(255, 255, 255, 0.025);
+  color: #9ba8ba;
+}
+
+
+.settings-secondary-button:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+
+  background: rgba(255, 255, 255, 0.045);
+
+  color: #d1d8e2;
+}
+
+
+.settings-primary-button {
+  border: 1px solid rgba(139, 92, 246, 0.35);
+
+  background: rgba(139, 92, 246, 0.18);
+
+  color: #c8beff;
+}
+
+
+.settings-primary-button:hover {
+  border-color: rgba(139, 92, 246, 0.50);
+
+  background: rgba(139, 92, 246, 0.26);
+
+  color: #e0dbff;
+}
+
+
+.settings-secondary-button:disabled,
+.settings-primary-button:disabled,
+.settings-modal-close:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   MOBILE MODAL
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+  .settings-modal-overlay {
+    padding: 14px;
+  }
+
+  .settings-modal {
+    max-height: calc(100vh - 28px);
+  }
+
+  .settings-modal-header {
+    padding: 18px 17px 16px;
+  }
+
+  .settings-modal-form {
+    padding: 17px;
+  }
+
+  .settings-modal-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .settings-secondary-button,
+  .settings-primary-button {
+    width: 100%;
+  }
+
+}
+
+/* =========================================================
+   MODAL VALIDATION ERROR
+   ========================================================= */
+
+   .settings-modal-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  
+    margin-top: -2px;
+    padding: 9px 11px;
+  
+    border: 1px solid rgba(251, 79, 93, 0.22);
+    border-radius: 8px;
+  
+    background: rgba(251, 79, 93, 0.07);
+    color: #ff8b94;
+  
+    font-size: 12px;
+    line-height: 1.45;
+    font-weight: 600;
+  }
+  
+  .settings-modal-error svg {
+    flex: 0 0 auto;
+    margin-top: 1px;
+  } 

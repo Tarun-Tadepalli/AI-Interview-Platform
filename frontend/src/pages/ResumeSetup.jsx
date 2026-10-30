@@ -13,11 +13,14 @@ import "../styles/auth.css";
 
 import Navbar from "../components/Navbar";
 
+import { uploadResume } from "../services/authService";
+
 export default function ResumeSetup() {
   const navigate = useNavigate();
 
   const [file, setFile] = useState(null);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
 
   /* =========================================================
@@ -81,66 +84,41 @@ export default function ResumeSetup() {
      CONTINUE
   ========================================================= */
 
-  const handleContinue = () => {
-
+  const handleContinue = async () => {
     if (!file) {
-
       setError(
         "Please upload your resume before continuing."
       );
-
       return;
     }
-
-
-    /*
-      TEMPORARY FRONTEND-ONLY STORAGE
-
-      IMPORTANT:
-
-      localStorage cannot permanently store a File object.
-
-      For now we store resume metadata only.
-
-      Later backend will replace this with:
-
-      POST /resume/upload
-
-      Backend flow:
-
-      1. Receive PDF
-      2. Validate file
-      3. Store resume
-      4. Extract PDF text
-      5. Parse resume information
-      6. Save structured information
-      7. Associate resume with user
-      8. Make resume available to:
-         - Interview Practice
-         - Dashboard
-         - Profile
-         - Progress
-         - AI question generation
-    */
-
-    localStorage.setItem(
-      "aiInterviewResume",
-      JSON.stringify({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        uploadedAt: new Date().toISOString(),
-      })
-    );
-
-
-    /*
-      Registration information already stored
-      by Register.jsx will remain available
-      until backend authentication is connected.
-    */
-
-    navigate("/login");
+  
+    const token = localStorage.getItem("access_token");
+  
+    if (!token) {
+      setError(
+        "Your login session has expired. Please login again."
+      );
+  
+      navigate("/login");
+      return;
+    }
+  
+    setError("");
+    setLoading(true);
+  
+    try {
+      await uploadResume(file);
+  
+      navigate("/dashboard");
+    } catch (error) {
+      setError(
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        "Resume upload failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -288,7 +266,7 @@ export default function ResumeSetup() {
               onClick={handleContinue}
             >
 
-              Continue to Login
+              {loading ? "Uploading..." : "Continue"}
 
               <ArrowRight size={18} />
 

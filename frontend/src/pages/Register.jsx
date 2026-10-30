@@ -26,6 +26,8 @@ import Navbar from "../components/Navbar";
 
 import PasswordRules from "../components/PasswordRules";
 
+import {registerUser, loginUser,} from "../services/authService";
+
 const initialForm = {
   // Account
   firstName: "",
@@ -265,65 +267,86 @@ export default function Register() {
   =========================================================
   */
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
+  
     if (!validateStepThree()) {
       return;
     }
-
-    /*
-    ---------------------------------------------------------
-    TEMPORARY FRONTEND-ONLY STORAGE
-
-    This will later become:
-
-    POST /auth/register
-
-    when FastAPI + PostgreSQL authentication is connected.
-    ---------------------------------------------------------
-    */
-
-    const registrationData = {
-      firstName: form.firstName,
-      lastName: form.lastName,
-      email: form.email,
-      phone: form.phone,
-
-      status: form.status,
-      college: form.college,
-      degree: form.degree,
-      graduationYear: form.graduationYear,
-
-      targetRole: form.targetRole,
-      experience: form.experience,
-      interviewFocus: form.interviewFocus,
-      programmingLanguage: form.programmingLanguage,
-
-      terms: form.terms,
-    };
-
-    /*
-    IMPORTANT:
-    Password is intentionally NOT stored here.
-
-    Backend authentication will handle the password
-    securely later.
-    */
-
-    localStorage.setItem(
-      "aiInterviewRegistration",
-      JSON.stringify(registrationData)
-    );
-
-    /*
-    Registration -> Resume Setup
-
-    Resume setup will later upload/save the resume
-    against the authenticated user.
-    */
-
-    navigate("/resume");
+  
+    try {
+      const registrationData = {
+        first_name: form.firstName.trim(),
+        last_name: form.lastName.trim(),
+        email: form.email.trim().toLowerCase(),
+        phone: form.phone.trim() || null,
+  
+        status: form.status,
+        college: form.college.trim(),
+        degree: form.degree.trim(),
+        graduation_year: Number(form.graduationYear),
+  
+        target_role: form.targetRole,
+        experience: form.experience,
+        interview_focus: form.interviewFocus,
+        programming_language: form.programmingLanguage,
+  
+        password: form.password,
+        terms: form.terms,
+      };
+  
+      const registerResponse = await registerUser(
+        registrationData
+      );
+  
+      if (!registerResponse.success) {
+        setError(
+          registerResponse.message ||
+          "Registration failed."
+        );
+        return;
+      }
+  
+      const loginResponse = await loginUser({
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
+  
+      if (!loginResponse.success) {
+        setError(
+          "Account created successfully. Please login to continue."
+        );
+  
+        navigate("/login");
+        return;
+      }
+  
+      localStorage.setItem(
+        "access_token",
+        loginResponse.token
+      );
+  
+      localStorage.setItem(
+        "userEmail",
+        form.email.trim().toLowerCase()
+      );
+  
+      localStorage.setItem(
+        "role",
+        loginResponse.role
+      );
+  
+      navigate("/resume");
+  
+    } catch (error) {
+      console.error("Registration error:", error);
+  
+      setError(
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        "Registration failed. Please try again."
+      );
+    }
   };
 
   /*

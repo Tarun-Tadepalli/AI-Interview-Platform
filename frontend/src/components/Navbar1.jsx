@@ -138,12 +138,38 @@ function Navbar1({ children }) {
   const initials =
     `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 
-  const handleLogout = () => {
-    localStorage.removeItem("currentUser");
-
+  const handleLogout = async () => {
     setProfileOpen(false);
-
-    navigate("/login");
+    const activeSessionId = localStorage.getItem("aiInterviewActiveSessionId");
+    const token = localStorage.getItem("access_token") || localStorage.getItem("token") || localStorage.getItem("authToken");
+    try {
+      if (activeSessionId && token) {
+        await fetch(`http://localhost:8000/interview/${activeSessionId}/terminate`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+    } catch (error) {
+      // Backend still rejects old sessions if termination could not be reached;
+      // never retain a client-side pointer that could resume the old session.
+      console.error("Interview termination request could not be reached.");
+    } finally {
+      localStorage.removeItem("aiInterviewActiveSessionId");
+      localStorage.removeItem("aiInterviewSetup");
+      localStorage.removeItem("aiInterviewLastResult");
+      localStorage.removeItem("currentUser");
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("token");
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("role");
+      localStorage.removeItem("pendingRegistration");
+      localStorage.removeItem("aiInterviewResume");
+      // Ask AI chat and public-to-private handoff are session-only.
+      sessionStorage.removeItem("aiAskAIConversation");
+      sessionStorage.removeItem("askAiHandoff");
+      navigate("/login");
+    }
   };
 
   return (

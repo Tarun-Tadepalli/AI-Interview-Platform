@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Navbar1 from "../components/Navbar1";
 import "../styles/typingpractice.css";
+import { saveTypingResult } from "../services/typingService";
 
 const WORDS = [
   "about", "above", "accept", "across", "action", "active", "actually",
@@ -148,12 +149,17 @@ export default function TypingPractice() {
   });
 
   const [restartArmed, setRestartArmed] = useState(false);
+  const [saveStatus, setSaveStatus] = useState("idle");
 
   const typingAreaRef = useRef(null);
+  const typingTextRef = useRef(null);
+  const currentCharacterRef = useRef(null);
   const typedRef = useRef("");
   const targetRef = useRef("");
   const startedRef = useRef(false);
-  const elapsedRef = useRef(0);
+  const elapsedRef   = useRef(0);
+  const startTimeRef = useRef(null);
+  const finishedRef = useRef(false);  
 
   const currentLimit = mode === "time" ? timeLimit : wordLimit;
 
@@ -176,44 +182,106 @@ export default function TypingPractice() {
   }, [typedText]);
 
   useEffect(() => {
-    if (screen !== "test" || !started) return;
 
+    if (screen !== "test" ||!started) {
+      return;
+    }
+  
     const interval = setInterval(() => {
-      setElapsed((previous) => {
-        const next = previous + 1;
-        elapsedRef.current = next;
-
-        const liveStats = calculateStats(
+  
+      if (!startTimeRef.current) {
+        return;
+      }
+  
+      const actualElapsed = Math.floor(
+        (
+          performance.now() -
+          startTimeRef.current
+        ) / 1000
+      );
+  
+      elapsedRef.current =
+        actualElapsed;
+  
+      setElapsed(actualElapsed);
+  
+      const liveStats =
+        calculateStats(
           typedRef.current,
           targetRef.current,
-          next
+          Math.max(actualElapsed, 1)
         );
-
-        setStats(liveStats);
-
-        return next;
-      });
-
-      if (mode === "time") {
-        setRemaining((previous) => {
-          if (previous <= 1) {
-            finishTest();
-            return 0;
-          }
-
-          return previous - 1;
-        });
+  
+      setStats(liveStats);
+  
+      if (
+        mode === "time" &&
+        actualElapsed >= timeLimit
+      ) {
+  
+        setRemaining(0);
+  
+        finishTest();
+        return;
       }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [screen, started, mode]);
+  
+      if (mode === "time") {
+  
+        setRemaining(
+          Math.max(
+            timeLimit - actualElapsed,
+            0
+          )
+        );
+      }
+  
+    }, 100);
+  
+    return () => {
+      clearInterval(interval);
+    };
+  
+  }, [
+    screen,
+    started,
+    mode,
+    timeLimit,
+  ]);
 
   useEffect(() => {
     if (screen === "test") {
       setTimeout(() => typingAreaRef.current?.focus(), 50);
     }
   }, [screen]);
+
+  useEffect(() => {
+    if (screen !== "test" || !currentCharacterRef.current || !typingTextRef.current) {
+      return;
+    }
+  
+    const wrapper = typingTextRef.current;
+    const currentCharacter = currentCharacterRef.current;
+  
+    const currentTop = currentCharacter.offsetTop;
+    const currentBottom =
+      currentTop + currentCharacter.offsetHeight;
+  
+    const visibleTop = wrapper.scrollTop;
+    const visibleBottom =
+      visibleTop + wrapper.clientHeight;
+  
+    if (currentTop < visibleTop || currentBottom > visibleBottom) {
+      const targetScrollTop =
+        currentTop -
+        wrapper.clientHeight / 2 +
+        currentCharacter.offsetHeight / 2;
+  
+      wrapper.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: "smooth",
+      });
+    }
+  }, [typedText, screen]);
 
   useEffect(() => {
     if (screen !== "test") return;
@@ -250,6 +318,7 @@ export default function TypingPractice() {
 
     setElapsed(0);
     elapsedRef.current = 0;
+    startTimeRef.current = null;
 
     setRemaining(mode === "time" ? timeLimit : 0);
 
@@ -257,6 +326,8 @@ export default function TypingPractice() {
     startedRef.current = false;
 
     setRestartArmed(false);
+    setSaveStatus("idle");
+    finishedRef.current = false;
 
     setStats({
       wpm: 0,
@@ -271,8 +342,13 @@ export default function TypingPractice() {
   };
 
   const startClockIfNeeded = () => {
+
     if (!startedRef.current) {
+  
+      startTimeRef.current = performance.now();
+  
       startedRef.current = true;
+  
       setStarted(true);
     }
   };
@@ -367,57 +443,163 @@ export default function TypingPractice() {
   };
 
   const checkCompletion = (value) => {
-    if (mode === "words") {
-      const completedWords = value
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean).length;
-
-      if (
-        completedWords >= wordLimit &&
-        value.trim() === targetRef.current.trim()
-      ) {
-        finishTest();
-      }
+    if (mode !== "words") return;
+  
+    const completedWords = value
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean).length;
+  
+    if (completedWords >= wordLimit) {
+      finishTest();
     }
   };
 
-  const finishTest = () => {
-    if (screen !== "test") return;
-
-    const finalStats = calculateStats(
+  const finishTest = async () => {
+    if (
+      screen !== "test" ||
+      finishedRef.current
+    ) {
+      return;
+    }
+  
+    finishedRef.current = true;
+  
+    const finalElapsed = Math.max(
+      elapsedRef.current,
+      1
+    );
+  
+    const localStats = calculateStats(
       typedRef.current,
       targetRef.current,
-      Math.max(elapsedRef.current, 1)
+      finalElapsed
     );
-
-    setStats(finalStats);
+  
+    // Show the final result immediately.
+    setStats(localStats);
     setStarted(false);
     startedRef.current = false;
-
-    localStorage.setItem(
-      "aiTypingPracticeResult",
-      JSON.stringify({
-        completedAt: new Date().toISOString(),
-        mode,
-        timeLimit,
-        wordLimit,
-        punctuation,
-        numbers,
-        targetText: targetRef.current,
-        typedText: typedRef.current,
-        elapsed: elapsedRef.current,
-        stats: finalStats,
-      })
-    );
-
+    setSaveStatus("saving");
     setScreen("results");
+  
+    const resultData = {
+      mode,
+      time_limit:
+        mode === "time"
+          ? timeLimit
+          : null,
+      word_limit:
+        mode === "words"
+          ? wordLimit
+          : null,
+      punctuation,
+      numbers,
+      typed_text: typedRef.current,
+      target_text: targetRef.current,
+      elapsed_seconds: finalElapsed,
+    };
+  
+    try {
+      const response = await saveTypingResult(
+        resultData
+      );
+  
+      const backendResult =
+        response?.result ??
+        response?.data?.result ??
+        response;
+  
+      const backendStats =
+        backendResult?.stats;
+  
+      if (backendStats) {
+        const finalStats = {
+          wpm:
+            backendStats.wpm ??
+            localStats.wpm,
+  
+          rawWpm:
+            backendStats.rawWpm ??
+            backendStats.raw_wpm ??
+            localStats.rawWpm,
+  
+          accuracy:
+            backendStats.accuracy ??
+            localStats.accuracy,
+  
+          errors:
+            backendStats.errors ??
+            localStats.errors,
+  
+          correct:
+            backendStats.correct ??
+            backendStats.correct_characters ??
+            localStats.correct,
+  
+          characters:
+            backendStats.characters ??
+            localStats.characters,
+        };
+  
+        setStats(finalStats);
+  
+        localStorage.setItem(
+          "aiTypingPracticeResult",
+          JSON.stringify({
+            ...resultData,
+            completedAt:
+              new Date().toISOString(),
+            stats: finalStats,
+            backendResult,
+          })
+        );
+      } else {
+        localStorage.setItem(
+          "aiTypingPracticeResult",
+          JSON.stringify({
+            ...resultData,
+            completedAt:
+              new Date().toISOString(),
+            stats: localStats,
+          })
+        );
+      }
+  
+      setSaveStatus("saved");
+  
+    } catch (error) {
+      console.error(
+        "Failed to save typing result:",
+        error
+      );
+  
+      // The result is already visible.
+      // Keep the locally calculated result.
+      localStorage.setItem(
+        "aiTypingPracticeResult",
+        JSON.stringify({
+          ...resultData,
+          completedAt:
+            new Date().toISOString(),
+          stats: localStats,
+          saveFailed: true,
+        })
+      );
+  
+      setStats(localStats);
+      setSaveStatus("error");
+    }
   };
+
+  
 
   const restartTest = () => {
     setScreen("setup");
     setStarted(false);
     startedRef.current = false;
+    startTimeRef.current = null;
+    finishedRef.current = false;
     setRestartArmed(false);
   };
 
@@ -441,13 +623,14 @@ export default function TypingPractice() {
       }
 
       return (
-        <span
-          className={className}
-          key={`${character}-${index}`}
-        >
-          {character === " " ? "\u00A0" : character}
-        </span>
-      );
+      <span 
+      className={className}
+      key={`${character}-${index}`}
+      ref={index === typed.length ? currentCharacterRef : null}
+      >
+      {character === " " ? "\u00A0" : character}
+      </span>
+    );
     });
   };
 
@@ -733,7 +916,7 @@ export default function TypingPractice() {
             English
           </div>
 
-          <div className="typing-text-wrapper">
+          <div className="typing-text-wrapper" ref={typingTextRef}>
             <div className="typing-text">{renderText()}</div>
           </div>
 
@@ -792,8 +975,17 @@ export default function TypingPractice() {
             <h1>Your Typing Result</h1>
 
             <p className="typing-results-description">
-              Great work. Your typing performance has been recorded and
-              will later become part of your overall progress history.
+              {saveStatus === "saving" && (
+                "Calculating and securely saving your typing result..."
+              )}
+              
+              {saveStatus === "saved" && (
+                "Your typing result has been saved successfully and is ready for your Progress history."
+              )}
+
+              {saveStatus === "error" && (
+                "Your result was calculated successfully, but it could not be saved to the server. A local backup was kept."
+              )}
             </p>
 
             <div className="typing-result-hero">

@@ -12,6 +12,7 @@ import {
   User,
 } from "lucide-react";
 import Navbar1 from "../components/Navbar1";
+import { sendPrivateAskAIMessage } from "../services/askAiService";
 import "../styles/ask-ai.css";
 
 const quickPrompts = [
@@ -48,110 +49,218 @@ const initialMessage = {
     "Hi! I'm your AI Interview assistant. You can ask me about interview preparation, your resume, technical concepts, behavioral questions, or how to improve your answers.",
 };
 
+
+const renderInlineMarkdown = (text, keyPrefix = "inline") => {
+  const pattern = /(\*\*[^*]+\*\*|__[^_]+__|`[^`]+`|\*[^*]+\*|_[^_]+_)/g;
+  const parts = String(text).split(pattern);
+  return parts.map((part, index) => {
+    const key = `${keyPrefix}-${index}`;
+    if ((part.startsWith("**") && part.endsWith("**")) || (part.startsWith("__") && part.endsWith("__"))) {
+      return <strong key={key}>{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return <code key={key}>{part.slice(1, -1)}</code>;
+    }
+    if ((part.startsWith("*") && part.endsWith("*")) || (part.startsWith("_") && part.endsWith("_"))) {
+      return <em key={key}>{part.slice(1, -1)}</em>;
+    }
+    return part;
+  });
+};
+
+const FormattedMessage = ({ content }) => {
+  const lines = String(content || "").replace(/\r/g, "").split("\n");
+  const blocks = [];
+  let paragraph = [];
+  let listItems = [];
+  let listType = null;
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    blocks.push({ type: "paragraph", lines: paragraph });
+    paragraph = [];
+  };
+  const flushList = () => {
+    if (!listItems.length) return;
+    blocks.push({ type: listType || "ul", items: listItems });
+    listItems = [];
+    listType = null;
+  };
+
+  lines.forEach((rawLine) => {
+    const line = rawLine.trim();
+    const bullet = line.match(/^[-*+]\s+(.+)$/);
+    const numbered = line.match(/^\d+[.)]\s+(.+)$/);
+    if (!line || /^[-*_]{3,}$/.test(line)) {
+      flushParagraph(); flushList();
+      return;
+    }
+    if (bullet || numbered) {
+      flushParagraph();
+      const type = numbered ? "ol" : "ul";
+      if (listType && listType !== type) flushList();
+      listType = type;
+      listItems.push((bullet || numbered)[1]);
+      return;
+    }
+    flushList();
+    const heading = line.match(/^(#{1,4})\s+(.+)$/);
+    if (heading) {
+      flushParagraph();
+      blocks.push({ type: `h${Math.min(heading[1].length + 2, 5)}`, text: heading[2].replace(/\*\*/g, "") });
+      return;
+    }
+    paragraph.push(line);
+  });
+  flushParagraph(); flushList();
+
+  return (
+    <div className="formatted-message">
+      {blocks.map((block, index) => {
+        if (block.type === "ul" || block.type === "ol") {
+          const ListTag = block.type;
+          return <ListTag key={index}>{block.items.map((item, itemIndex) => <li key={itemIndex}>{renderInlineMarkdown(item, `list-${index}-${itemIndex}`)}</li>)}</ListTag>;
+        }
+        if (block.type.startsWith("h")) {
+          const HeadingTag = block.type;
+          return <HeadingTag key={index}>{renderInlineMarkdown(block.text, `heading-${index}`)}</HeadingTag>;
+        }
+        return <p key={index}>{renderInlineMarkdown(block.lines.join(" "), `paragraph-${index}`)}</p>;
+      })}
+    </div>
+  );
+};
+
+const HANDOFF_KEY = "askAiHandoff";
+
+const readHandoff = () => {
+  try {
+    const handoff = JSON.parse(sessionStorage.getItem(HANDOFF_KEY) || "null");
+    if (
+      handoff &&
+      handoff.createdAt &&
+      Date.now() - handoff.createdAt < 2 * 60 * 60 * 1000 &&
+      Array.isArray(handoff.messages)
+    ) {
+      return handoff;
+    }
+  } catch {
+    // A malformed temporary handoff should not stop the page from loading.
+  }
+  return null;
+};
+
+// Chat is temporary: preserve it during refresh/navigation in this tab only.
+const PRIVATE_CHAT_KEY = "aiAskAIConversation";
+
 const getSavedMessages = () => {
+  const handoff = readHandoff();
+  if (handoff) {
+    const restored = handoff.messages
+      .filter((message) => !message.requiresLogin)
+      .map((message, index) => ({
+        ...message,
+        id: message.id ?? `restored-${index}-${Date.now()}`,
+      }));
+    return restored.length ? restored : [initialMessage];
+  }
+
   try {
     const saved = JSON.parse(
-      localStorage.getItem("aiAskAIConversation") || "null"
+      sessionStorage.getItem(PRIVATE_CHAT_KEY) || "null"
     );
-
-    return Array.isArray(saved) && saved.length
-      ? saved
-      : [initialMessage];
+    return Array.isArray(saved) && saved.length ? saved : [initialMessage];
   } catch {
     return [initialMessage];
   }
-};
-
-const getResponse = (question) => {
-  const text = question.toLowerCase();
-
-  if (text.includes("resume")) {
-    return "I can help you improve your resume by reviewing your skills, projects, experience, education, and how well they match your target role. Once the backend is connected, I'll also be able to use your saved resume directly for personalized suggestions.";
-  }
-
-  if (
-    text.includes("interview") ||
-    text.includes("question")
-  ) {
-    return "A good interview strategy is to answer clearly, explain your reasoning, and support your answer with a practical example. Once Gemini is connected, I can generate questions based on your selected role, experience, interview focus, and resume.";
-  }
-
-  if (
-    text.includes("python") ||
-    text.includes("sql") ||
-    text.includes("javascript") ||
-    text.includes("coding") ||
-    text.includes("programming")
-  ) {
-    return "I can help you prepare programming and technical questions, explain concepts step by step, review code, and create interview-style practice questions. Later, the AI backend will provide personalized answers using Gemini.";
-  }
-
-  if (
-    text.includes("behavioral") ||
-    text.includes("hr") ||
-    text.includes("strength") ||
-    text.includes("weakness")
-  ) {
-    return "For behavioral questions, structure your answer around the situation, your responsibility, the action you took, and the result. This gives the interviewer a clear understanding of your experience.";
-  }
-
-  return "That's a good question. I can help you with interview preparation, resume improvement, technical concepts, coding, behavioral questions, and communication. The full AI-powered response system will be connected through the backend and Gemini later.";
 };
 
 const AskAI = () => {
   const [messages, setMessages] = useState(getSavedMessages);
   const [input, setInput] = useState("");
   const [copiedId, setCopiedId] = useState(null);
+  const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState("");
 
   const inputRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const handoffRef = useRef(readHandoff());
+  const handoffProcessedRef = useRef(false);
 
   useEffect(() => {
-    localStorage.setItem(
-      "aiAskAIConversation",
-      JSON.stringify(messages)
-    );
+    // Private Ask AI messages must not persist across logout/new login.
+    sessionStorage.setItem(PRIVATE_CHAT_KEY, JSON.stringify(messages));
   }, [messages]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isSending]);
 
-  const sendMessage = (value = input) => {
+  const sendMessage = async (value = input, options = {}) => {
     const question = value.trim();
+    if (!question || isSending) return;
 
-    if (!question) return;
-
+    const appendUserMessage = options.appendUserMessage !== false;
     const userMessage = {
-      id: Date.now(),
+      id: `${Date.now()}-user`,
       role: "user",
       content: question,
     };
 
-    const assistantMessage = {
-      id: Date.now() + 1,
-      role: "assistant",
-      content: getResponse(question),
-    };
-
-    setMessages((previous) => [
-      ...previous,
-      userMessage,
-      assistantMessage,
-    ]);
-
+    if (appendUserMessage) {
+      setMessages((previous) => [...previous, userMessage]);
+    }
     setInput("");
+    setSendError("");
+    setIsSending(true);
 
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 0);
+    // Do not resend the original handoff question as part of its own history.
+    let history = messages.filter((message) =>
+      (message.role === "user" || message.role === "assistant") &&
+      typeof message.content === "string" && message.content.trim()
+    );
+    if (!appendUserMessage && history.length && history[history.length - 1].role === "user" && history[history.length - 1].content.trim() === question) {
+      history = history.slice(0, -1);
+    }
+    history = history.slice(-10).map(({ role, content }) => ({ role, content }));
+
+    try {
+      const result = await sendPrivateAskAIMessage(question, history);
+      setMessages((previous) => [...previous, {
+        id: `${Date.now()}-assistant`,
+        role: "assistant",
+        content: result.answer,
+      }]);
+    } catch (error) {
+      setSendError(
+        error.response?.data?.detail ||
+        "Ask AI could not respond right now. Please try again."
+      );
+    } finally {
+      setIsSending(false);
+      window.setTimeout(() => inputRef.current?.focus(), 0);
+    }
   };
+
+  useEffect(() => {
+    if (handoffProcessedRef.current) return;
+    handoffProcessedRef.current = true;
+    const handoff = handoffRef.current;
+    if (!handoff) return;
+
+    // Remove the temporary handoff before the AI request so refreshes do not resend it.
+    sessionStorage.removeItem(HANDOFF_KEY);
+    if (handoff.pendingQuestion && handoff.pendingQuestion.trim()) {
+      sendMessage(handoff.pendingQuestion, { appendUserMessage: false });
+    }
+  }, []);
 
   const clearConversation = () => {
     setMessages([initialMessage]);
-    localStorage.removeItem("aiAskAIConversation");
+    setSendError("");
+    sessionStorage.removeItem(PRIVATE_CHAT_KEY);
+    sessionStorage.removeItem(HANDOFF_KEY);
+    handoffRef.current = null;
   };
 
   const copyMessage = async (message) => {
@@ -203,7 +312,7 @@ const AskAI = () => {
 
               <div>
                 <strong>AI Interview Assistant</strong>
-                <span>Ready to help</span>
+                <span>{isSending ? "Thinking…" : "Connected to AI"}</span>
               </div>
             </div>
 
@@ -243,8 +352,8 @@ const AskAI = () => {
               <div>
                 <strong>Personalized AI</strong>
                 <p>
-                  Later, AI will use your profile and resume
-                  to provide more relevant answers.
+                  Ask about technical concepts, interview preparation,
+                  your resume, and your saved practice results.
                 </p>
               </div>
             </div>
@@ -291,7 +400,7 @@ const AskAI = () => {
                     </div>
 
                     <div className="message-bubble">
-                      <p>{message.content}</p>
+                      {message.role === "assistant" ? <FormattedMessage content={message.content} /> : <p>{message.content}</p>}
                     </div>
 
                     {message.role === "assistant" && (
@@ -319,6 +428,18 @@ const AskAI = () => {
                 </div>
               ))}
 
+              {isSending && (
+                <div className="message-row assistant">
+                  <div className="message-avatar"><BrainCircuit size={17} /></div>
+                  <div className="message-content"><div className="message-bubble"><p>Thinking through your question…</p></div></div>
+                </div>
+              )}
+              {sendError && (
+                <div className="ask-ai-error" role="alert">
+                  <span>{sendError}</span>
+                  <button type="button" onClick={() => sendMessage(messages.filter((item) => item.role === "user").slice(-1)[0]?.content || "", { appendUserMessage: false })}>Retry</button>
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </div>
 
@@ -347,7 +468,7 @@ const AskAI = () => {
                   type="button"
                   className="send-button"
                   onClick={() => sendMessage()}
-                  disabled={!input.trim()}
+                  disabled={!input.trim() || isSending}
                   aria-label="Send message"
                 >
                   <ArrowUp size={18} />
@@ -365,8 +486,7 @@ const AskAI = () => {
         <footer className="ask-ai-footer">
           <span>AI Interview Training Platform</span>
           <span>
-            AI responses will be powered by Gemini after backend
-            integration.
+            Responses are generated by Gemini through the secure backend.
           </span>
         </footer>
       </main>

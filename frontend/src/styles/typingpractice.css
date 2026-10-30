@@ -476,8 +476,10 @@
   
   .typing-text-wrapper {
     width: 100%;
-    max-height: 245px;
+    height: 245px;
     overflow: hidden;
+    position: relative;
+    scroll-behavior: smooth;
   }
   
   .typing-text {

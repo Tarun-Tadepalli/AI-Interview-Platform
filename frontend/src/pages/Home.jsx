@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import "../styles/home.css";
+import PublicAskAIWidget from "../components/PublicAskAIWidget";
 
 const features = [
   {
@@ -845,28 +846,8 @@ function Home() {
       </footer>
 
 
-      {/* FLOATING ASK AI BUTTON */}
-      <motion.button
-        className="ask-ai-button"
-        whileHover={{
-          scale: 1.05,
-          y: -4,
-        }}
-        whileTap={{
-          scale: 0.96,
-        }}
-        aria-label="Ask AI"
-      >
-
-        <div className="ask-ai-icon">
-          <Sparkles size={19} />
-        </div>
-
-        <span>ASK AI</span>
-
-        <span className="ask-ai-pulse" />
-
-      </motion.button>
+      {/* PUBLIC WEBSITE CHATBOT */}
+      <PublicAskAIWidget />
 
 
       {/* SCROLL INDICATOR */}

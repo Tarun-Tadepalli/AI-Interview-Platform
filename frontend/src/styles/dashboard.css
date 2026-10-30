@@ -1302,3 +1302,18 @@ font-size: 10px;
   transition-duration: 0.01ms !important;
 }
 }
+
+
+/* Live dashboard integration states */
+.dashboard-refresh { display:inline-flex; align-items:center; gap:7px; border:1px solid rgba(255,255,255,.1); border-radius:9px; padding:8px 11px; color:#cbd5e1; background:rgba(255,255,255,.035); font:inherit; font-size:11px; cursor:pointer; }
+.dashboard-refresh:disabled { opacity:.55; cursor:wait; }
+.dashboard-error { display:flex; align-items:flex-start; gap:12px; padding:15px 17px; margin-bottom:20px; border:1px solid rgba(248,113,113,.25); border-radius:13px; background:rgba(127,29,29,.16); color:#fecaca; }
+.dashboard-error p { margin:5px 0; color:#e5b4b4; font-size:12px; }
+.dashboard-error span { color:#a6b2c2; font-size:11px; }
+.dashboard-error button { margin-left:auto; display:inline-flex; align-items:center; gap:6px; padding:8px 10px; border:1px solid rgba(248,113,113,.2); border-radius:8px; background:transparent; color:#fecaca; cursor:pointer; white-space:nowrap; }
+.dashboard-activity-link { color:inherit; text-decoration:none; }
+.dashboard-activity-link:hover .activity-info strong { color:#fff; }
+.dashboard-empty { display:flex; flex-direction:column; align-items:flex-start; gap:7px; padding:14px 0 4px; color:#74849a; }
+.dashboard-empty strong { color:#dce3ec; font-size:12px; }
+.dashboard-empty span { color:#7f8da1; font-size:11px; line-height:1.6; }
+@media (max-width:560px) { .dashboard-error { flex-wrap:wrap; } .dashboard-error button { margin-left:0; } }
