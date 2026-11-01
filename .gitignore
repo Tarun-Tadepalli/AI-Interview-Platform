@@ -26,3 +26,13 @@ backend/.venv/
 
 # User uploaded files
 backend/uploads/
+
+# Database backups - never upload to GitHub
+database_backup/
+*.backup
+*.dump
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
