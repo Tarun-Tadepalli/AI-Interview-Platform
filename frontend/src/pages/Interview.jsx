@@ -29,7 +29,9 @@ const focusLabels = {
   system: "System Design",
 };
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = (
+  import.meta.env.VITE_API_URL || "http://localhost:8000"
+).replace(/\/$/, "");
 
 // Detect questions that explicitly ask the candidate to write code or a query.
 // This is intentionally a small frontend-only helper; question generation is unchanged.

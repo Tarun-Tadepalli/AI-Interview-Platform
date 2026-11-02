@@ -20,6 +20,10 @@ import {
 
 import "../styles/navbar1.css";
 
+const API_BASE = (
+  import.meta.env.VITE_API_URL || "http://localhost:8000"
+).replace(/\/$/, "");
+
 const navigationItems = [
   {
     label: "Dashboard",
@@ -144,7 +148,7 @@ function Navbar1({ children }) {
     const token = localStorage.getItem("access_token") || localStorage.getItem("token") || localStorage.getItem("authToken");
     try {
       if (activeSessionId && token) {
-        await fetch(`http://localhost:8000/interview/${activeSessionId}/terminate`, {
+        await fetch(`${API_BASE}/interview/${activeSessionId}/terminate`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
         });
