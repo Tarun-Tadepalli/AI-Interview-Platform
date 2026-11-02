@@ -109,3 +109,92 @@ def send_password_reset_otp(receiver_email: str, otp: str):
         raise RuntimeError(
             "Unable to send the verification email."
         ) from error
+    
+
+def send_registration_otp(receiver_email: str, otp: str):
+    api_key = os.getenv("BREVO_API_KEY")
+    sender_email = os.getenv("BREVO_SENDER_EMAIL")
+    sender_name = os.getenv(
+        "BREVO_SENDER_NAME",
+        "AI Interview Platform"
+    )
+
+    if not api_key or not sender_email:
+        raise RuntimeError(
+            "Brevo email configuration is missing."
+        )
+
+    payload = {
+        "sender": {
+            "name": sender_name,
+            "email": sender_email
+        },
+        "to": [
+            {"email": receiver_email}
+        ],
+        "subject": "Verify your email - AI Interview Platform",
+        "htmlContent": f"""
+        <div style="
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: auto;
+            padding: 28px;
+            color: #202436;
+            border: 1px solid #e6e8ef;
+            border-radius: 12px;
+        ">
+            <h2>Email verification</h2>
+            <p>Hello,</p>
+            <p>
+                Thank you for choosing AI Interview Platform.
+                Please verify your email address to complete
+                your account registration.
+            </p>
+            <div style="
+                margin: 24px 0;
+                padding: 18px;
+                text-align: center;
+                background: #f4f5f8;
+                border-radius: 8px;
+                font-size: 30px;
+                font-weight: bold;
+                letter-spacing: 8px;
+                color: #d52b3f;
+            ">
+                {otp}
+            </div>
+            <p>
+                This code expires in <strong>5 minutes</strong>.
+                You have a maximum of 3 attempts.
+            </p>
+            <p>
+                If you did not request this code, please ignore
+                this email.
+            </p>
+            <p>
+                Regards,<br>
+                <strong>AI Interview Platform Support</strong>
+            </p>
+        </div>
+        """
+    }
+
+    headers = {
+        "accept": "application/json",
+        "api-key": api_key,
+        "content-type": "application/json"
+    }
+
+    try:
+        response = httpx.post(
+            BREVO_API_URL,
+            json=payload,
+            headers=headers,
+            timeout=20.0
+        )
+        response.raise_for_status()
+
+    except httpx.HTTPError as error:
+        raise RuntimeError(
+            "Unable to send the registration verification email."
+        ) from error

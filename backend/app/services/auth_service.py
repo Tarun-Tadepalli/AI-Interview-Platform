@@ -10,7 +10,7 @@ from app.utils.security_util import (
     verify_password,
 )
 
-from app.services.auth_security_service import login_with_lockout
+from app.services.auth_security_service import (login_with_lockout, consume_registration_verification,)
 
 
 def validate_email(email: str) -> bool:
@@ -70,6 +70,11 @@ def register_new_user(data):
         raise ValueError(
             "An account with this email already exists."
         )
+    # Registration is permitted only after backend email verification.
+    consume_registration_verification(
+        email=email,
+        token=data.email_verification_token
+    )
 
     password_hash = hash_password(data.password)
 

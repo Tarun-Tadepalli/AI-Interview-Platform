@@ -21,8 +21,17 @@ class RegisterRequest(BaseModel):
     password: str
     terms: bool
 
+    email_verification_token: str
 
 class LoginRequest(BaseModel):
 
     email: str
     password: str
+
+class RegistrationOtpRequest(BaseModel):
+    email: str
+
+
+class VerifyRegistrationOtpRequest(BaseModel):
+    email: str
+    otp: str

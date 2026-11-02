@@ -14,6 +14,35 @@ export const registerUser = async (userData) => {
   return response.data;
 };
 
+/* =========================================================
+   REGISTRATION EMAIL OTP
+========================================================= */
+
+export const requestRegistrationOtp = async (email) => {
+  const response = await api.post(
+    "/auth/registration/send-otp",
+    { email }
+  );
+
+  return response.data;
+};
+
+
+/* =========================================================
+   VERIFY REGISTRATION EMAIL OTP
+========================================================= */
+
+export const verifyRegistrationOtp = async (email, otp) => {
+  const response = await api.post(
+    "/auth/registration/verify-otp",
+    {
+      email,
+      otp,
+    }
+  );
+
+  return response.data;
+};
 
 /* =========================================================
    LOGIN

@@ -3,6 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.schemas.auth_schema import (
     LoginRequest,
     RegisterRequest,
+    RegistrationOtpRequest,
+    VerifyRegistrationOtpRequest,
 )
 from app.services.auth_service import (
     login_user,
@@ -20,7 +22,11 @@ from app.services.auth_security_service import (
     request_password_reset,
     verify_password_reset_otp,
     reset_password,
+    request_registration_otp,
+    verify_registration_otp,
+
 )
+
 
 router = APIRouter(
     prefix="/auth",
@@ -47,6 +53,20 @@ def register(data: RegisterRequest):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(error)
         )
+    
+@router.post("/registration/send-otp")
+def send_registration_email_otp(data: RegistrationOtpRequest):
+    return request_registration_otp(data.email)
+
+
+@router.post("/registration/verify-otp")
+def verify_registration_email_otp(
+    data: VerifyRegistrationOtpRequest
+):
+    return verify_registration_otp(
+        email=data.email,
+        otp=data.otp
+    )
 
 
 @router.post("/login")

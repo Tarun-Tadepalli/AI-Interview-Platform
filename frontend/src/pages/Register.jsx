@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import {
@@ -26,8 +26,12 @@ import Navbar from "../components/Navbar";
 
 import PasswordRules from "../components/PasswordRules";
 
-import {registerUser, loginUser,} from "../services/authService";
-
+import {
+  registerUser,
+  loginUser,
+  requestRegistrationOtp,
+  verifyRegistrationOtp,
+} from "../services/authService";
 const initialForm = {
   // Account
   firstName: "",
@@ -66,6 +70,21 @@ export default function Register() {
   const [passwordFocused, setPasswordFocused] = useState(false);
 
   const [error, setError] = useState("");
+
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [verifiedEmail, setVerifiedEmail] = useState("");
+
+  const [showOtpPopup, setShowOtpPopup] = useState(false);
+  const [otp, setOtp] = useState("");
+
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpMessage, setOtpMessage] = useState("");
+  const [otpError, setOtpError] = useState("");
+
+  const [verificationToken, setVerificationToken] = useState("");
+
+  const [resendSeconds, setResendSeconds] = useState(0);
+  const resendTimer = useRef(null);
 
   /*
   =========================================================
@@ -109,6 +128,140 @@ export default function Register() {
     setError("");
   };
 
+  const normalizedEmail = form.email.trim().toLowerCase();
+
+const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+  normalizedEmail
+);
+
+const handleEmailChange = (event) => {
+  const newEmail = event.target.value;
+
+  setForm((previous) => ({
+    ...previous,
+    email: newEmail,
+  }));
+
+  // A verified email becomes unverified if the address changes.
+  if (
+    newEmail.trim().toLowerCase() !== verifiedEmail
+  ) {
+    setEmailVerified(false);
+    setVerifiedEmail("");
+    setVerificationToken("");
+    setOtp("");
+    setOtpError("");
+    setOtpMessage("");
+  }
+
+  setError("");
+};
+
+
+const startResendCooldown = () => {
+  setResendSeconds(60);
+
+  if (resendTimer.current) {
+    clearInterval(resendTimer.current);
+  }
+
+  resendTimer.current = setInterval(() => {
+    setResendSeconds((previous) => {
+      if (previous <= 1) {
+        clearInterval(resendTimer.current);
+        resendTimer.current = null;
+        return 0;
+      }
+
+      return previous - 1;
+    });
+  }, 1000);
+};
+
+
+const handleSendRegistrationOtp = async () => {
+  if (!validEmail) {
+    setError("Please enter a valid email address.");
+    return;
+  }
+
+  try {
+    setOtpLoading(true);
+    setOtpError("");
+    setOtpMessage("");
+
+    const response = await requestRegistrationOtp(
+      normalizedEmail
+    );
+
+    if (response.success) {
+      setOtp("");
+      setShowOtpPopup(true);
+      setOtpMessage(
+        "A 6-digit verification code has been sent to your email."
+      );
+
+      startResendCooldown();
+    }
+  } catch (error) {
+    setOtpError(
+      error.response?.data?.detail ||
+      "Unable to send OTP. Please try again."
+    );
+  } finally {
+    setOtpLoading(false);
+  }
+};
+
+
+const handleVerifyRegistrationOtp = async () => {
+  if (!/^\d{6}$/.test(otp)) {
+    setOtpError("Please enter the complete 6-digit OTP.");
+    return;
+  }
+
+  try {
+    setOtpLoading(true);
+    setOtpError("");
+
+    const response = await verifyRegistrationOtp(
+      normalizedEmail,
+      otp
+    );
+
+    if (response.success && response.verification_token) {
+      setEmailVerified(true);
+      setVerifiedEmail(normalizedEmail);
+
+      setVerificationToken(
+        response.verification_token
+      );
+
+      setShowOtpPopup(false);
+      setOtp("");
+      setOtpMessage("");
+      setOtpError("");
+      setError("");
+    }
+  } catch (error) {
+    setOtpError(
+      error.response?.data?.detail ||
+      "Incorrect OTP. Please try again."
+    );
+  } finally {
+    setOtpLoading(false);
+  }
+};
+
+
+const handleResendRegistrationOtp = async () => {
+  if (resendSeconds > 0 || otpLoading) {
+    return;
+  }
+
+  await handleSendRegistrationOtp();
+};
+
   /*
   =========================================================
   STEP 1 VALIDATION
@@ -128,6 +281,22 @@ export default function Register() {
 
     if (!form.email.trim()) {
       setError("Please enter your email address.");
+      return false;
+    }
+
+    if (!validEmail) {
+      setError("Please enter a valid email address.");
+      return false;
+    }
+    
+    if (
+      !emailVerified ||
+      verifiedEmail !== normalizedEmail ||
+      !verificationToken
+    ) {
+      setError(
+        "Please verify your email address before continuing."
+      );
       return false;
     }
 
@@ -293,6 +462,7 @@ export default function Register() {
   
         password: form.password,
         terms: form.terms,
+        email_verification_token: verificationToken,
       };
   
       const registerResponse = await registerUser(
@@ -304,6 +474,15 @@ export default function Register() {
           registerResponse.message ||
           "Registration failed."
         );
+        return;
+      }
+
+      if (
+        !emailVerified ||
+        verifiedEmail !== normalizedEmail ||
+        !verificationToken
+      ) {
+        setError("Please verify your email address before registering.");
         return;
       }
   
@@ -544,32 +723,61 @@ export default function Register() {
 
                 </div>
 
-
-                {/* EMAIL */}
+                {/* EMAIL + VERIFICATION */}
 
                 <div className="input-group">
 
-                  <label htmlFor="email">
-                    Email address
-                  </label>
+                <label htmlFor="email">
+                  Email address
+                </label>
 
-                  <div className="input-wrapper">
+                <div className="register-email-row">
+
+                  <div className="input-wrapper register-email-input">
 
                     <Mail size={17} />
 
                     <input
-                      id="email"
-                      type="email"
-                      name="email"
-                      placeholder="you@example.com"
-                      value={form.email}
-                      onChange={updateField}
-                      autoComplete="email"
-                    />
+      id="email"
+      type="email"
+      name="email"
+      placeholder="you@example.com"
+      value={form.email}
+      onChange={handleEmailChange}
+      autoComplete="email"
+    />
 
-                  </div>
+  </div>
 
-                </div>
+  {emailVerified && verifiedEmail === normalizedEmail ? (
+
+    <div className="email-verified-button">
+      <CheckCircle2 size={16} />
+      Verified
+    </div>
+
+  ) : (
+
+    <button
+      type="button"
+      className="email-verify-button"
+      onClick={handleSendRegistrationOtp}
+      disabled={!validEmail || otpLoading}
+    >
+      {otpLoading ? "Sending..." : "Verify"}
+    </button>
+
+  )}
+
+</div>
+
+{emailVerified && verifiedEmail === normalizedEmail && (
+  <p className="email-verified-note">
+    Your email address has been successfully verified.
+  </p>
+)}
+
+</div>
 
 
                 {/* PHONE */}
@@ -1248,6 +1456,101 @@ export default function Register() {
             )}
 
           </form>
+
+          
+{showOtpPopup && (
+  <div
+    className="email-otp-overlay"
+    onClick={(event) => {
+      if (event.target === event.currentTarget && !otpLoading) {
+        setShowOtpPopup(false);
+      }
+    }}
+  >
+    <div
+      className="email-otp-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="email-otp-title"
+    >
+      <button
+        type="button"
+        className="email-otp-close"
+        onClick={() => setShowOtpPopup(false)}
+        disabled={otpLoading}
+        aria-label="Close verification popup"
+      >
+        ×
+      </button>
+
+      <div className="email-otp-icon">
+        <Mail size={25} />
+      </div>
+
+      <h2 id="email-otp-title">Verify your email</h2>
+
+      <p>
+        Enter the 6-digit verification code sent to:
+      </p>
+
+      <strong className="email-otp-address">
+        {normalizedEmail}
+      </strong>
+
+      <input
+        className="email-otp-input"
+        type="text"
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        maxLength={6}
+        placeholder="Enter 6-digit OTP"
+        value={otp}
+        onChange={(event) => {
+          setOtp(
+            event.target.value.replace(/\D/g, "").slice(0, 6)
+          );
+          setOtpError("");
+        }}
+      />
+
+      {otpMessage && (
+        <p className="email-otp-success">
+          {otpMessage}
+        </p>
+      )}
+
+      {otpError && (
+        <p className="email-otp-error" role="alert">
+          {otpError}
+        </p>
+      )}
+
+      <button
+        type="button"
+        className="email-otp-verify"
+        onClick={handleVerifyRegistrationOtp}
+        disabled={otpLoading || otp.length !== 6}
+      >
+        {otpLoading ? "Verifying..." : "Verify OTP"}
+      </button>
+
+      <div className="email-otp-resend">
+        Didn't receive the code?
+
+        <button
+          type="button"
+          onClick={handleResendRegistrationOtp}
+          disabled={otpLoading || resendSeconds > 0}
+        >
+          {resendSeconds > 0
+            ? `Resend in ${resendSeconds}s`
+            : "Resend OTP"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
 
           {/* =================================================
