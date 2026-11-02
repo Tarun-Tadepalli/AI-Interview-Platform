@@ -1695,6 +1695,62 @@
   margin-top: 22px;
 }
 
+/* =========================================================
+   FORGOT PASSWORD PAGE
+========================================================= */
+
+.auth-success {
+  color: #48c78e;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 4px 0 10px;
+}
+
+.forgot-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  font-size: 13px;
+  color: #aeb4c5;
+}
+
+.forgot-secondary a {
+  color: #f05a68;
+  text-decoration: none;
+}
+
+.forgot-secondary a:hover {
+  text-decoration: underline;
+}
+
+.forgot-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: none;
+  color: #c7cada;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+.forgot-back-button:hover {
+  color: #ffffff;
+}
+.forgot-back-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auth-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 
 /* =========================================================
    RESPONSIVE — TABLET

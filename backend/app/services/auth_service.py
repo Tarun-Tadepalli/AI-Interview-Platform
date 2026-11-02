@@ -10,6 +10,8 @@ from app.utils.security_util import (
     verify_password,
 )
 
+from app.services.auth_security_service import login_with_lockout
+
 
 def validate_email(email: str) -> bool:
 
@@ -104,21 +106,7 @@ def register_new_user(data):
 
 def login_user(email: str, password: str):
 
-    email = email.strip().lower()
-
-    user = get_user_by_email(email)
-
-    if not user:
-        raise ValueError("Invalid email or password.")
-
-    if not user["is_active"]:
-        raise ValueError("This account is inactive.")
-
-    if not verify_password(
-        password,
-        user["password_hash"]
-    ):
-        raise ValueError("Invalid email or password.")
+    user = login_with_lockout(email, password)
 
     token = create_access_token(
         user_id=user["id"],

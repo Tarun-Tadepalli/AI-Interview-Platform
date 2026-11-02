@@ -15,6 +15,8 @@ import TypingPractice from "../pages/TypingPractice";
 import Progress from "../pages/Progress";
 import AskAI from "../pages/AskAI";
 
+import ForgotPassword from "../pages/ForgotPassword";
+
 import ProtectedRoute from "../components/ProtectedRoute";
 import SessionManager from "../components/SessionManager";
 
@@ -45,6 +47,10 @@ function AppRoutes() {
         <Route
           path="/register"
           element={<Register />}
+        />
+        <Route
+          path="/forgot-password"
+          element={<ForgotPassword />}
         />
 
 

@@ -28,6 +28,51 @@ export const loginUser = async (loginData) => {
   return response.data;
 };
 
+/* =========================================================
+   FORGOT PASSWORD
+========================================================= */
+
+export const requestPasswordReset = async (email) => {
+  const response = await api.post("/auth/forgot-password", {
+    email,
+  });
+
+  return response.data;
+};
+
+
+/* =========================================================
+   VERIFY PASSWORD RESET OTP
+========================================================= */
+
+export const verifyPasswordResetOtp = async (email, otp) => {
+  const response = await api.post("/auth/verify-reset-otp", {
+    email,
+    otp,
+  });
+
+  return response.data;
+};
+
+
+/* =========================================================
+   RESET PASSWORD
+========================================================= */
+
+export const resetPassword = async ({
+  email,
+  reset_token,
+  password,
+}) => {
+  const response = await api.post("/auth/reset-password", {
+    email,
+    reset_token,
+    password,
+  });
+
+  return response.data;
+};
+
 
 /* =========================================================
    CURRENT USER
